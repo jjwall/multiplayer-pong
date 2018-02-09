@@ -9,7 +9,7 @@ var server = http.createServer(app);
 
 var wss = new WebSocket.Server({ server });
 
-var gameObjects = {
+var gameObjs = {
 	puck: {
 		x: 50,
 		y: 20,
@@ -18,17 +18,6 @@ var gameObjects = {
 		velx: 0,
 		vely:0
 	}
-}
-var puck = {
-	x: 50,
-	y: 20,
-	w: 10,
-	h: 10
-}
-
-var velocity = {
-	x: 0,
-	y: 0
 }
 
 var gameState = true;
@@ -41,36 +30,35 @@ wss.on('connection', function(connection) {
 	connection.send(players);
 	
 	if (players >= 2) {
-		velocity.x = 5;
-		velocity.y = 5;
+		gameObjs.puck.velx = 5;
+		gameObjs.puck.vely = 5;
 		startGame();
 	}
 	
-	//if (players >= 2); {
 	function startGame() {
 		setInterval(function() {
 			if (!gameState) {
 				return;
 			}
-			if (puck.x >= 740) {
-				velocity.x = -5;
+			if (gameObjs.puck.x >= 740) {
+				gameObjs.puck.velx = -5;
 			}
-			if (puck.y >= 490) {
-				velocity.y = -5;
+			if (gameObjs.puck.y >= 490) {
+				gameObjs.puck.vely = -5;
 			}
-			if (puck.x <= 0) {
-				velocity.x = 5;
+			if (gameObjs.puck.x <= 0) {
+				gameObjs.puck.velx = 5;
 			}
-			if (puck.y <=0){
-				velocity.y = 5;
+			if (gameObjs.puck.y <=0){
+				gameObjs.puck.vely = 5;
 			}
-			puck.x += velocity.x;
-			puck.y += velocity.y;
+			gameObjs.puck.x += gameObjs.puck.velx;
+			gameObjs.puck.y += gameObjs.puck.vely;
 			
-			var puckString = JSON.stringify(puck);
+			var gameObjsString = JSON.stringify(gameObjs);
 			
 			wss.clients.forEach(client => {
-				client.send(puckString);
+				client.send(gameObjsString);
 			});
 		}, 20);
 	}
@@ -100,8 +88,8 @@ wss.on('connection', function(connection) {
 		
 		if (message == 'start') {
 			console.log(players);
-			velocity.x = 5;
-			velocity.y = 5;
+			gameObjs.puck.velx = 5;
+			gameObjs.puck.vely = 5;
 			if (players > 1) {
 				gameState = false;
 			}

@@ -54,8 +54,8 @@ $(document).ready(function () {
 		else {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			ctx.beginPath();
-			var puckObj = JSON.parse(message.data);
-			ctx.rect(puckObj.x, puckObj.y, puckObj.w, puckObj.h);
+			var gameObjs = JSON.parse(message.data);
+			ctx.rect(gameObjs.puck.x, gameObjs.puck.y, gameObjs.puck.w, gameObjs.puck.h);
 			ctx.stroke();
 		}
 	};
