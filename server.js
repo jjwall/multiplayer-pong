@@ -16,7 +16,15 @@ var gameObjs = {
 		w: 10,
 		h: 10,
 		velx: 0,
-		vely:0
+		vely: 0
+	},
+	leftpaddle: {
+		x: 0,
+		y: 0,
+		w: 10,
+		h: 50,
+		velx: 0,
+		vely: 5
 	}
 }
 
@@ -46,12 +54,25 @@ wss.on('connection', function(connection) {
 			if (gameObjs.puck.y >= 490) {
 				gameObjs.puck.vely = -5;
 			}
-			if (gameObjs.puck.x <= 0) {
-				gameObjs.puck.velx = 5;
-			}
-			if (gameObjs.puck.y <=0){
+			// if (gameObjs.puck.x <= 0) {
+				// gameObjs.puck.velx = 5;
+			// }
+			if (gameObjs.puck.y <=0) {
 				gameObjs.puck.vely = 5;
 			}
+			if (gameObjs.puck.y >= gameObjs.leftpaddle.y
+				&& gameObjs.puck.y <= gameObjs.leftpaddle.y + gameObjs.leftpaddle.h
+				&& gameObjs.puck.x <= gameObjs.leftpaddle.w) {
+				gameObjs.puck.velx = 5;
+				//gameObjs.puck.vely = -5;
+			}
+			// if (gameObjs.puck.y >= gameObjs.leftpaddle.y// + (gameObjs.leftpaddle.y + gameObjs.leftpaddle.h)/2
+				// && gameObjs.puck.y <= gameObjs.leftpaddle.y + gameObjs.leftpaddle.h
+				// && gameObjs.puck.x <= gameObjs.leftpaddle.w) {
+				// gameObjs.puck.velx = 5;
+				// gameObjs.puck.vely = 5;
+			// }
+				
 			gameObjs.puck.x += gameObjs.puck.velx;
 			gameObjs.puck.y += gameObjs.puck.vely;
 			
@@ -64,18 +85,20 @@ wss.on('connection', function(connection) {
 	}
 	
 	connection.on('message', function(message) {
-		console.log(`received: ${message}`);
-		
 		if (message == 'disconnect') {
 			connection.terminate();
 		}
 		
 		if (message == '1 up') {
-			console.log("1 up");
+			if (gameObjs.leftpaddle.y >= 0) {
+				gameObjs.leftpaddle.y -= gameObjs.leftpaddle.vely;
+			}
 		}
 		
 		if (message == '1 down') {
-			console.log("1 down");
+			if (gameObjs.leftpaddle.y <= 450) {
+				gameObjs.leftpaddle.y += gameObjs.leftpaddle.vely;
+			}
 		}
 		
 		if (message == '2 up') {
