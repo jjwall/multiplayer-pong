@@ -28,6 +28,21 @@ var gameObjs = {
 	}
 }
 
+function puckYVal(paddlepos, puckpos) {
+	var halfPaddle = paddlepos - 25;
+	if (puckpos < halfPaddle) {
+		var ratio = (halfPaddle - puckpos) / 100;
+		return -20 * ratio;
+	}
+	else if (puckpos > halfPaddle) {
+		var ratio = (puckpos - halfPaddle) / 100;
+		return 20 * ratio;
+		}
+		//return 5;
+	else 
+		return 0;
+}
+
 var gameState = true;
 
 var players = 0;
@@ -52,18 +67,21 @@ wss.on('connection', function(connection) {
 				gameObjs.puck.velx = -5;
 			}
 			if (gameObjs.puck.y >= 490) {
-				gameObjs.puck.vely = -5;
+				gameObjs.puck.vely = gameObjs.puck.vely * (-1);
 			}
 			// if (gameObjs.puck.x <= 0) {
 				// gameObjs.puck.velx = 5;
 			// }
 			if (gameObjs.puck.y <=0) {
-				gameObjs.puck.vely = 5;
+				gameObjs.puck.vely = gameObjs.puck.vely * (-1);
 			}
 			if (gameObjs.puck.y >= gameObjs.leftpaddle.y
 				&& gameObjs.puck.y <= gameObjs.leftpaddle.y + gameObjs.leftpaddle.h
 				&& gameObjs.puck.x <= gameObjs.leftpaddle.w) {
-				gameObjs.puck.velx = 5;
+					var paddlePos = gameObjs.leftpaddle.y + gameObjs.leftpaddle.h;
+					var puckPos = gameObjs.puck.y + gameObjs.puck.h;
+					gameObjs.puck.vely = puckYVal(paddlePos, puckPos);
+					gameObjs.puck.velx = 5;
 				//gameObjs.puck.vely = -5;
 			}
 			// if (gameObjs.puck.y >= gameObjs.leftpaddle.y// + (gameObjs.leftpaddle.y + gameObjs.leftpaddle.h)/2
