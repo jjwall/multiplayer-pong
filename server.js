@@ -11,8 +11,8 @@ var wss = new WebSocket.Server({ server });
 
 var gameObjs = {
 	puck: {
-		x: 50,
-		y: 20,
+		x: 375,
+		y: 250,
 		w: 10,
 		h: 10,
 		velx: 0,
@@ -20,22 +20,23 @@ var gameObjs = {
 	},
 	leftpaddle: {
 		x: 0,
-		y: 200,
+		y: 225,
 		w: 10,
 		h: 50,
 		velx: 0,
-		vely: 10
+		vely: 8
 	},
 	rightpaddle: {
 		x: 740,
-		y: 200,
+		y: 225,
 		w: 10,
 		h: 50,
 		velx: 0,
-		vely: 5
+		vely: 8
 	}
 }
 
+// function that calculates puck's Y velocity based on where puck hits the paddle
 function puckYVal(paddlepos, puckpos) {
 	var halfPaddle = paddlepos - 25;
 	if (puckpos < halfPaddle) {
@@ -50,7 +51,7 @@ function puckYVal(paddlepos, puckpos) {
 		return 0;
 }
 
-var gameState = true;
+var gameFrames;
 
 var players = 0;
 
@@ -59,29 +60,27 @@ wss.on('connection', function(connection) {
 	players++;
 	connection.send(players);
 	
-	if (players >= 2) {
-		gameObjs.puck.velx = 5;
-		gameObjs.puck.vely = 5;
-		startGame();
-	}
+	// if (players >= 2) {
+		// gameObjs.puck.velx = 5;
+		// gameObjs.puck.vely = 5;
+		// startGame();
+	// }
 	
 	function startGame() {
-		setInterval(function() {
-			if (!gameState) {
-				return;
-			}
-			if (gameObjs.puck.x >= 740) {
-				gameObjs.puck.velx = -5;
-			}
+		gameFrames = setInterval(function() {
+			// if (gameObjs.puck.x >= 740) {
+				// gameObjs.puck.velx = -5;
+			// }
 			if (gameObjs.puck.y >= 490) {
 				gameObjs.puck.vely = gameObjs.puck.vely * (-1);
 			}
-			// if (gameObjs.puck.x <= 0) {
-				// gameObjs.puck.velx = 5;
-			// }
+			if (gameObjs.puck.x <= 0) {
+				 gameObjs.puck.velx = 5;
+			 }
 			if (gameObjs.puck.y <=0) {
 				gameObjs.puck.vely = gameObjs.puck.vely * (-1);
 			}
+			// left paddle collision detection
 			if (gameObjs.puck.y + gameObjs.puck.h >= gameObjs.leftpaddle.y
 				&& gameObjs.puck.y <= gameObjs.leftpaddle.y + gameObjs.leftpaddle.h
 				&& gameObjs.puck.x <= gameObjs.leftpaddle.w) {
@@ -90,12 +89,15 @@ wss.on('connection', function(connection) {
 					gameObjs.puck.vely = puckYVal(paddlePos, puckPos);
 					gameObjs.puck.velx = 5;
 			}
-			// if (gameObjs.puck.y >= gameObjs.leftpaddle.y// + (gameObjs.leftpaddle.y + gameObjs.leftpaddle.h)/2
-				// && gameObjs.puck.y <= gameObjs.leftpaddle.y + gameObjs.leftpaddle.h
-				// && gameObjs.puck.x <= gameObjs.leftpaddle.w) {
-				// gameObjs.puck.velx = 5;
-				// gameObjs.puck.vely = 5;
-			// }
+			// right paddle collision detection
+			if (gameObjs.puck.y + gameObjs.puck.h >= gameObjs.rightpaddle.y
+				&& gameObjs.puck.y <= gameObjs.rightpaddle.y + gameObjs.rightpaddle.h
+				&& gameObjs.puck.x >= 740 - gameObjs.rightpaddle.w) {
+					var paddlePos = gameObjs.rightpaddle.y + gameObjs.rightpaddle.h;
+					var puckPos = gameObjs.puck.y + gameObjs.puck.h;
+					gameObjs.puck.vely = puckYVal(paddlePos, puckPos);
+					gameObjs.puck.velx = -5;
+			}
 				
 			gameObjs.puck.x += gameObjs.puck.velx;
 			gameObjs.puck.y += gameObjs.puck.vely;
@@ -138,13 +140,22 @@ wss.on('connection', function(connection) {
 		}
 		
 		if (message == 'start') {
-			console.log(players);
-			gameObjs.puck.velx = 5;
-			gameObjs.puck.vely = 5;
-			if (players > 1) {
-				gameState = false;
-			}
-			startGame();
+			// console.log(players);
+			// gameObjs.puck.velx = 5;
+			// gameObjs.puck.vely = 5;
+			// if (players > 1) {
+			// }
+			// startGame();
+			//setTimeout(function(){
+				clearInterval(gameFrames);
+				gameObjs.puck.x = 375;
+				gameObjs.puck.y = 240;
+				gameObjs.leftpaddle.y = 225;
+				gameObjs.rightpaddle.y = 225;
+				gameObjs.puck.velx = 5;
+				gameObjs.puck.vely = 0;
+				startGame();
+			//}, 3000);
 		}
 	});
 	

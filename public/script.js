@@ -14,6 +14,10 @@ $(document).ready(function () {
 		console.log(connection);
 	};
 	
+	$('#startButton').on('click', function() {
+		connection.send('start');
+	});
+	
 	// window.onkeydown = function (e) {
 		// if (e.keyCode === 13) {
 			// puckStart();
@@ -57,7 +61,7 @@ $(document).ready(function () {
 			var gameObjs = JSON.parse(message.data);
 			ctx.rect(gameObjs.puck.x, gameObjs.puck.y, gameObjs.puck.w, gameObjs.puck.h);
 			ctx.rect(gameObjs.leftpaddle.x, gameObjs.leftpaddle.y, gameObjs.leftpaddle.w, gameObjs.leftpaddle.h);
-			ctx.rect(gameObjs.rightpaddle.x, gameObjs.rightpaddle.y, gameObjs.rightpaddle.w, gameObjs.rightpaddle.h);
+			ctx.rect(gameObjs.rightpaddle.x, gameObjs.rightpaddle.y, gameObjs.rightpaddle.w, gameObjs.rightpaddle.h); 
 			ctx.stroke();
 		}
 	};
@@ -66,7 +70,7 @@ $(document).ready(function () {
 		connection.send("start");
 	};
 	
-	$(window).on("unload", function(e) {
-		connection.send("disconnect");
+	$(window).on('unload', function(e) {
+		connection.send('disconnect');
 	});
 });

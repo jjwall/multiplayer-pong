@@ -1,3 +1,44 @@
 body, html {
 	background-color: black;
 }
+
+canvas {
+	display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+h3 {
+	color: white;
+	margin: auto;
+    width: 50%;
+    /* border: 3px solid green; */
+    padding: 10px;
+	text-align: center;
+}
+
+h1 {
+	color: white;
+	margin: auto;
+    width: 50%;
+	text-align: center;
+}
+
+#player1Score {
+	/* margin-left: 100px; */
+	/* right: 500px; */
+	position: fixed;
+}
+
+#player2Score {
+	right: 5px;
+	/* margin-bottom: 50px; */
+	position: fixed;
+}
+
+#startButtonDiv {
+	margin: auto;
+    width: 50%;
+    padding: 10px;
+	text-align: center;
+}
