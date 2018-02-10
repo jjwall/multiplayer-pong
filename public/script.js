@@ -9,6 +9,11 @@ $(document).ready(function () {
 	var keyUp = false;
 	var keyDown = false;
 	ctx.strokeStyle = 'white';
+	//ctx.beginPath();
+	ctx.rect(375, 240, 10, 10);
+	ctx.rect(0, 225, 10, 50);
+	ctx.rect(740, 225, 10, 50);
+	ctx.stroke();
 	
 	connection.onopen = function () {
 		console.log(connection);

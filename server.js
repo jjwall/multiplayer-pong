@@ -39,10 +39,12 @@ var gameObjs = {
 // function that calculates puck's Y velocity based on where puck hits the paddle
 function puckYVal(paddlepos, puckpos) {
 	var halfPaddle = paddlepos - 25;
+	// i.e. top half of the paddle
 	if (puckpos < halfPaddle) {
 		var ratio = (halfPaddle - puckpos) / 100;
 		return -20 * ratio;
 	}
+	// i.e. bottom half of the paddle
 	else if (puckpos > halfPaddle) {
 		var ratio = (puckpos - halfPaddle) / 100;
 		return 20 * ratio;
@@ -60,22 +62,20 @@ wss.on('connection', function(connection) {
 	players++;
 	connection.send(players);
 	
-	// if (players >= 2) {
-		// gameObjs.puck.velx = 5;
-		// gameObjs.puck.vely = 5;
-		// startGame();
-	// }
-	
 	function startGame() {
 		gameFrames = setInterval(function() {
-			// if (gameObjs.puck.x >= 740) {
-				// gameObjs.puck.velx = -5;
-			// }
+			if (gameObjs.puck.x >= 740) {
+				// player 1 scores
+				resetPuck();
+				//gameObjs.puck.velx = -5;
+			}
 			if (gameObjs.puck.y >= 490) {
 				gameObjs.puck.vely = gameObjs.puck.vely * (-1);
 			}
 			if (gameObjs.puck.x <= 0) {
-				 gameObjs.puck.velx = 5;
+				// player 2 scores
+				resetPuck();
+				 //gameObjs.puck.velx = 5;
 			 }
 			if (gameObjs.puck.y <=0) {
 				gameObjs.puck.vely = gameObjs.puck.vely * (-1);
@@ -108,6 +108,18 @@ wss.on('connection', function(connection) {
 				client.send(gameObjsString);
 			});
 		}, 20);
+	}
+	
+	// if a goal is scored this function is trigged
+	function resetPuck() {
+		clearInterval(gameFrames);
+		gameObjs.puck.x = 375;
+		gameObjs.puck.y = 240;
+		gameObjs.leftpaddle.y = 225;
+		gameObjs.rightpaddle.y = 225;
+		setTimeout(function(){
+			startGame();
+		}, 3000);
 	}
 	
 	connection.on('message', function(message) {
@@ -147,15 +159,14 @@ wss.on('connection', function(connection) {
 			// }
 			// startGame();
 			//setTimeout(function(){
-				clearInterval(gameFrames);
-				gameObjs.puck.x = 375;
-				gameObjs.puck.y = 240;
-				gameObjs.leftpaddle.y = 225;
-				gameObjs.rightpaddle.y = 225;
-				gameObjs.puck.velx = 5;
-				gameObjs.puck.vely = 0;
-				startGame();
-			//}, 3000);
+			clearInterval(gameFrames);
+			gameObjs.puck.x = 375;
+			gameObjs.puck.y = 240;
+			gameObjs.leftpaddle.y = 225;
+			gameObjs.rightpaddle.y = 225;
+			gameObjs.puck.velx = 5;
+			gameObjs.puck.vely = 0;
+			startGame();
 		}
 	});
 	
