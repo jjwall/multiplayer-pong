@@ -20,15 +20,15 @@ var gameObjs = {
 	},
 	leftpaddle: {
 		x: 0,
-		y: 0,
+		y: 200,
 		w: 10,
 		h: 50,
 		velx: 0,
-		vely: 5
+		vely: 10
 	},
 	rightpaddle: {
 		x: 740,
-		y: 0,
+		y: 200,
 		w: 10,
 		h: 50,
 		velx: 0,
@@ -82,7 +82,7 @@ wss.on('connection', function(connection) {
 			if (gameObjs.puck.y <=0) {
 				gameObjs.puck.vely = gameObjs.puck.vely * (-1);
 			}
-			if (gameObjs.puck.y >= gameObjs.leftpaddle.y
+			if (gameObjs.puck.y + gameObjs.puck.h >= gameObjs.leftpaddle.y
 				&& gameObjs.puck.y <= gameObjs.leftpaddle.y + gameObjs.leftpaddle.h
 				&& gameObjs.puck.x <= gameObjs.leftpaddle.w) {
 					var paddlePos = gameObjs.leftpaddle.y + gameObjs.leftpaddle.h;
