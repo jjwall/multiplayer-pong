@@ -57,6 +57,7 @@ $(document).ready(function () {
 			var gameObjs = JSON.parse(message.data);
 			ctx.rect(gameObjs.puck.x, gameObjs.puck.y, gameObjs.puck.w, gameObjs.puck.h);
 			ctx.rect(gameObjs.leftpaddle.x, gameObjs.leftpaddle.y, gameObjs.leftpaddle.w, gameObjs.leftpaddle.h);
+			ctx.rect(gameObjs.rightpaddle.x, gameObjs.rightpaddle.y, gameObjs.rightpaddle.w, gameObjs.rightpaddle.h);
 			ctx.stroke();
 		}
 	};

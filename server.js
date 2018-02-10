@@ -25,6 +25,14 @@ var gameObjs = {
 		h: 50,
 		velx: 0,
 		vely: 5
+	},
+	rightpaddle: {
+		x: 740,
+		y: 0,
+		w: 10,
+		h: 50,
+		velx: 0,
+		vely: 5
 	}
 }
 
@@ -38,7 +46,6 @@ function puckYVal(paddlepos, puckpos) {
 		var ratio = (puckpos - halfPaddle) / 100;
 		return 20 * ratio;
 		}
-		//return 5;
 	else 
 		return 0;
 }
@@ -82,7 +89,6 @@ wss.on('connection', function(connection) {
 					var puckPos = gameObjs.puck.y + gameObjs.puck.h;
 					gameObjs.puck.vely = puckYVal(paddlePos, puckPos);
 					gameObjs.puck.velx = 5;
-				//gameObjs.puck.vely = -5;
 			}
 			// if (gameObjs.puck.y >= gameObjs.leftpaddle.y// + (gameObjs.leftpaddle.y + gameObjs.leftpaddle.h)/2
 				// && gameObjs.puck.y <= gameObjs.leftpaddle.y + gameObjs.leftpaddle.h
@@ -120,11 +126,15 @@ wss.on('connection', function(connection) {
 		}
 		
 		if (message == '2 up') {
-			console.log("2 up");
+			if (gameObjs.rightpaddle.y >= 0) {
+				gameObjs.rightpaddle.y -= gameObjs.rightpaddle.vely;
+			}
 		}
 		
 		if (message == '2 down') {
-			console.log("2 down");
+			if (gameObjs.rightpaddle.y <= 450) {
+				gameObjs.rightpaddle.y += gameObjs.rightpaddle.vely;
+			}
 		}
 		
 		if (message == 'start') {
