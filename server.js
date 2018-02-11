@@ -23,8 +23,7 @@ var gameObjs = {
 		y: 225,
 		w: 10,
 		h: 50,
-		velx: 0,
-		vely: 8,
+		vely: 6,
 		score: 0,
 		win: false
 	},
@@ -33,8 +32,7 @@ var gameObjs = {
 		y: 225,
 		w: 10,
 		h: 50,
-		velx: 0,
-		vely: 8,
+		vely: 6,
 		score: 0,
 		win: false
 	}
