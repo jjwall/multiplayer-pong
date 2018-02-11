@@ -141,6 +141,7 @@ wss.on('connection', function(connection) {
 		if (gameObjs.leftpaddle.score < 11 && gameObjs.rightpaddle.score < 11) {
 			gameObjs.puck.x = 375;
 			gameObjs.puck.y = 240;
+			gameObjs.puck.velx = gameObjs.puck.velx * (-1);
 			gameObjs.leftpaddle.y = 225;
 			gameObjs.rightpaddle.y = 225;
 			setTimeout(function(){
