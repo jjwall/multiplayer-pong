@@ -122,12 +122,12 @@ wss.on('connection', function(connection) {
 	function resetPuck() {
 		clearInterval(gameFrames);
 		
-		if (gameObjs.leftpaddle.score === 1 || gameObjs.rightpaddle.score === 1) {
+		if (gameObjs.leftpaddle.score === 11 || gameObjs.rightpaddle.score === 11) {
 			gameState = false;
-			if (gameObjs.leftpaddle.score === 1) {
+			if (gameObjs.leftpaddle.score === 11) {
 				gameObjs.leftpaddle.win = true;
 			}
-			if (gameObjs.rightpaddle.score === 1) {
+			if (gameObjs.rightpaddle.score === 11) {
 				gameObjs.rightpaddle.win = true;
 			}
 		}
@@ -138,7 +138,7 @@ wss.on('connection', function(connection) {
 			client.send(gameObjsString);
 		});
 		
-		if (gameObjs.leftpaddle.score < 1 && gameObjs.rightpaddle.score < 1) {
+		if (gameObjs.leftpaddle.score < 11 && gameObjs.rightpaddle.score < 11) {
 			gameObjs.puck.x = 375;
 			gameObjs.puck.y = 240;
 			gameObjs.leftpaddle.y = 225;

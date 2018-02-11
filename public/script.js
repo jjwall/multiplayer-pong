@@ -2,9 +2,11 @@ $(document).ready(function () {
 	
 	window.WebSocket = window.WebSocket || window.MozWebSocket;
 	
-	var connection = new WebSocket('ws://localhost:8080');
-	var canvas = document.getElementById("pongTable");
-	var ctx = canvas.getContext("2d");
+	//var connection = new WebSocket('ws://localhost:8080');
+	var connection = new WebSocket('ws:https://png-game.herokuapp.com/');
+	var canvas = document.getElementById('pongTable');
+	var ctx = canvas.getContext('2d');
+	var winnerElem = $('#winner');
 	var currentPlayer;
 	var keyUp = false;
 	var keyDown = false;
@@ -43,7 +45,7 @@ $(document).ready(function () {
 	}
 
 	connection.onmessage = function (message) {
-		$('#winner').empty();
+		winnerElem.empty();
 		if (keyUp) {
 			connection.send(`${currentPlayer} up`);
 		}
@@ -71,10 +73,10 @@ $(document).ready(function () {
 				player2Score = gameObjs.rightpaddle.score;
 			}
 			if (gameObjs.leftpaddle.win) {
-				$('#winner').append("player 1 wins");
+				winnerElem.append("player 1 wins");
 			}
 			if (gameObjs.rightpaddle.win) {
-				$('#winner').append("player 2 wins");
+				winnerElem.append("player 2 wins");
 			}
 		}
 	};
