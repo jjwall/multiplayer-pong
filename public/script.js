@@ -3,7 +3,7 @@ $(document).ready(function () {
 	window.WebSocket = window.WebSocket || window.MozWebSocket;
 	
 	//var connection = new WebSocket('ws://localhost:8080');
-	var connection = new WebSocket('wss:https://png-game.herokuapp.com/');
+	var connection = new WebSocket('wss://png-game.herokuapp.com/');
 	var canvas = document.getElementById('pongTable');
 	var ctx = canvas.getContext('2d');
 	var winnerElem = $('#winner');
