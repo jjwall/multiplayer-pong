@@ -24,7 +24,9 @@ var gameObjs = {
 		w: 10,
 		h: 50,
 		velx: 0,
-		vely: 8
+		vely: 8,
+		score: 0,
+		win: false
 	},
 	rightpaddle: {
 		x: 740,
@@ -32,7 +34,9 @@ var gameObjs = {
 		w: 10,
 		h: 50,
 		velx: 0,
-		vely: 8
+		vely: 8,
+		score: 0,
+		win: false
 	}
 }
 
@@ -53,7 +57,11 @@ function puckYVal(paddlepos, puckpos) {
 		return 0;
 }
 
+var gameObjsString;
+
 var gameFrames;
+
+var gameState;
 
 var players = 0;
 
@@ -64,22 +72,22 @@ wss.on('connection', function(connection) {
 	
 	function startGame() {
 		gameFrames = setInterval(function() {
+			if (!gameState) {
+				clearInterval(gameFrames);
+			}
 			if (gameObjs.puck.x >= 740) {
 				// player 1 scores
+				gameObjs.leftpaddle.score++;
 				resetPuck();
-				//gameObjs.puck.velx = -5;
 			}
-			if (gameObjs.puck.y >= 490) {
+			if (gameObjs.puck.y <=0 || gameObjs.puck.y >= 490) {
 				gameObjs.puck.vely = gameObjs.puck.vely * (-1);
 			}
 			if (gameObjs.puck.x <= 0) {
 				// player 2 scores
+				gameObjs.rightpaddle.score++;
 				resetPuck();
-				 //gameObjs.puck.velx = 5;
 			 }
-			if (gameObjs.puck.y <=0) {
-				gameObjs.puck.vely = gameObjs.puck.vely * (-1);
-			}
 			// left paddle collision detection
 			if (gameObjs.puck.y + gameObjs.puck.h >= gameObjs.leftpaddle.y
 				&& gameObjs.puck.y <= gameObjs.leftpaddle.y + gameObjs.leftpaddle.h
@@ -87,7 +95,7 @@ wss.on('connection', function(connection) {
 					var paddlePos = gameObjs.leftpaddle.y + gameObjs.leftpaddle.h;
 					var puckPos = gameObjs.puck.y + gameObjs.puck.h;
 					gameObjs.puck.vely = puckYVal(paddlePos, puckPos);
-					gameObjs.puck.velx = 5;
+					gameObjs.puck.velx = gameObjs.puck.velx * (-1);
 			}
 			// right paddle collision detection
 			if (gameObjs.puck.y + gameObjs.puck.h >= gameObjs.rightpaddle.y
@@ -96,13 +104,13 @@ wss.on('connection', function(connection) {
 					var paddlePos = gameObjs.rightpaddle.y + gameObjs.rightpaddle.h;
 					var puckPos = gameObjs.puck.y + gameObjs.puck.h;
 					gameObjs.puck.vely = puckYVal(paddlePos, puckPos);
-					gameObjs.puck.velx = -5;
+					gameObjs.puck.velx = gameObjs.puck.velx * (-1);
 			}
 				
 			gameObjs.puck.x += gameObjs.puck.velx;
 			gameObjs.puck.y += gameObjs.puck.vely;
 			
-			var gameObjsString = JSON.stringify(gameObjs);
+			gameObjsString = JSON.stringify(gameObjs);
 			
 			wss.clients.forEach(client => {
 				client.send(gameObjsString);
@@ -113,13 +121,34 @@ wss.on('connection', function(connection) {
 	// if a goal is scored this function is trigged
 	function resetPuck() {
 		clearInterval(gameFrames);
-		gameObjs.puck.x = 375;
-		gameObjs.puck.y = 240;
-		gameObjs.leftpaddle.y = 225;
-		gameObjs.rightpaddle.y = 225;
-		setTimeout(function(){
-			startGame();
-		}, 3000);
+		
+		if (gameObjs.leftpaddle.score === 1 || gameObjs.rightpaddle.score === 1) {
+			gameState = false;
+			if (gameObjs.leftpaddle.score === 1) {
+				gameObjs.leftpaddle.win = true;
+			}
+			if (gameObjs.rightpaddle.score === 1) {
+				gameObjs.rightpaddle.win = true;
+			}
+		}
+		
+		gameObjsString = JSON.stringify(gameObjs);
+			// update score and send winner results
+		wss.clients.forEach(client => {
+			client.send(gameObjsString);
+		});
+		
+		if (gameObjs.leftpaddle.score < 1 && gameObjs.rightpaddle.score < 1) {
+			gameObjs.puck.x = 375;
+			gameObjs.puck.y = 240;
+			gameObjs.leftpaddle.y = 225;
+			gameObjs.rightpaddle.y = 225;
+			setTimeout(function(){
+				if (gameState) {
+					startGame();
+				}
+			}, 3000);
+		}
 	}
 	
 	connection.on('message', function(message) {
@@ -152,26 +181,30 @@ wss.on('connection', function(connection) {
 		}
 		
 		if (message == 'start') {
-			// console.log(players);
-			// gameObjs.puck.velx = 5;
-			// gameObjs.puck.vely = 5;
-			// if (players > 1) {
-			// }
-			// startGame();
-			//setTimeout(function(){
-			clearInterval(gameFrames);
-			gameObjs.puck.x = 375;
-			gameObjs.puck.y = 240;
-			gameObjs.leftpaddle.y = 225;
-			gameObjs.rightpaddle.y = 225;
-			gameObjs.puck.velx = 5;
-			gameObjs.puck.vely = 0;
-			startGame();
+			if (!gameState) {
+				gameState = true;
+				clearInterval(gameFrames);
+				gameObjs.puck.x = 375;
+				gameObjs.puck.y = 240;
+				gameObjs.leftpaddle.y = 225;
+				gameObjs.rightpaddle.y = 225;
+				gameObjs.leftpaddle.score = 0;
+				gameObjs.rightpaddle.score = 0;
+				gameObjs.leftpaddle.win = false;
+				gameObjs.rightpaddle.win = false;
+				gameObjs.puck.velx = 9;
+				gameObjs.puck.vely = 0;
+				startGame();
+			}
 		}
 	});
 	
 	connection.on('close', function(close) {
 		players--;
+		if (players === 0) {
+			gameState = false;
+			clearInterval(gameFrames);
+		}
 		console.log(`A client left the game there are ${players} players left.`);
 	});
 });

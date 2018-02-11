@@ -8,6 +8,8 @@ $(document).ready(function () {
 	var currentPlayer;
 	var keyUp = false;
 	var keyDown = false;
+	var player1Score = 0;
+	var player2Score = 0;
 	ctx.strokeStyle = 'white';
 	//ctx.beginPath();
 	ctx.rect(375, 240, 10, 10);
@@ -22,12 +24,6 @@ $(document).ready(function () {
 	$('#startButton').on('click', function() {
 		connection.send('start');
 	});
-	
-	// window.onkeydown = function (e) {
-		// if (e.keyCode === 13) {
-			// puckStart();
-		// }
-	// };
 	
 	window.onkeydown = function(e) {
 		if (e.keyCode === 38) {
@@ -49,11 +45,9 @@ $(document).ready(function () {
 
 	connection.onmessage = function (message) {
 		if (keyUp) {
-			//console.log("up");
 			connection.send(`${currentPlayer} up`);
 		}
 		if (keyDown) {
-			//console.log("down");
 			connection.send(`${currentPlayer} down`);
 		}
 		if (message.data.length === 1) {
@@ -68,11 +62,21 @@ $(document).ready(function () {
 			ctx.rect(gameObjs.leftpaddle.x, gameObjs.leftpaddle.y, gameObjs.leftpaddle.w, gameObjs.leftpaddle.h);
 			ctx.rect(gameObjs.rightpaddle.x, gameObjs.rightpaddle.y, gameObjs.rightpaddle.w, gameObjs.rightpaddle.h); 
 			ctx.stroke();
+			if (gameObjs.leftpaddle.score !== player1Score || gameObjs.rightpaddle.score !== player2Score) {
+				$('#player1Score').empty();
+				$('#player2Score').empty();
+				$('#player1Score').append(gameObjs.leftpaddle.score);
+				$('#player2Score').append(gameObjs.rightpaddle.score);
+				player1Score = gameObjs.leftpaddle.score;
+				player2Score = gameObjs.rightpaddle.score;
+			}
+			if (gameObjs.leftpaddle.win) {
+				console.log("player 1 wins");
+			}
+			if (gameObjs.rightpaddle.win) {
+				console.log("player 2 wins");
+			}
 		}
-	};
-	
-	function puckStart() {
-		connection.send("start");
 	};
 	
 	$(window).on('unload', function(e) {
