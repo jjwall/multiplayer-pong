@@ -11,7 +11,6 @@ $(document).ready(function () {
 	var player1Score = 0;
 	var player2Score = 0;
 	ctx.strokeStyle = 'white';
-	//ctx.beginPath();
 	ctx.rect(375, 240, 10, 10);
 	ctx.rect(0, 225, 10, 50);
 	ctx.rect(740, 225, 10, 50);
@@ -44,6 +43,7 @@ $(document).ready(function () {
 	}
 
 	connection.onmessage = function (message) {
+		$('#winner').empty();
 		if (keyUp) {
 			connection.send(`${currentPlayer} up`);
 		}
@@ -71,10 +71,10 @@ $(document).ready(function () {
 				player2Score = gameObjs.rightpaddle.score;
 			}
 			if (gameObjs.leftpaddle.win) {
-				console.log("player 1 wins");
+				$('#winner').append("player 1 wins");
 			}
 			if (gameObjs.rightpaddle.win) {
-				console.log("player 2 wins");
+				$('#winner').append("player 2 wins");
 			}
 		}
 	};
