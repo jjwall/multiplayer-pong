@@ -2,8 +2,8 @@ $(document).ready(function () {
 	
 	window.WebSocket = window.WebSocket || window.MozWebSocket;
 	
-	//var connection = new WebSocket('ws://localhost:8080');
-	var connection = new WebSocket('wss://png-game.herokuapp.com/');
+	var connection = new WebSocket('ws://localhost:8080');
+	//var connection = new WebSocket('wss://png-game.herokuapp.com/');
 	var canvas = document.getElementById('pongTable');
 	var ctx = canvas.getContext('2d');
 	var winnerElem = $('#winner');
@@ -23,6 +23,7 @@ $(document).ready(function () {
 	};
 	
 	$('#startButton').on('click', function() {
+		// send route + start
 		connection.send('start');
 	});
 	
@@ -47,9 +48,11 @@ $(document).ready(function () {
 	connection.onmessage = function (message) {
 		winnerElem.empty();
 		if (keyUp) {
+			// send route + currentPlayer + up
 			connection.send(`${currentPlayer} up`);
 		}
 		if (keyDown) {
+			// send route + currentPlayer + down
 			connection.send(`${currentPlayer} down`);
 		}
 		if (message.data.length === 1) {
@@ -60,28 +63,29 @@ $(document).ready(function () {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
 			ctx.beginPath();
 			var gameObjs = JSON.parse(message.data);
-			ctx.rect(gameObjs.puck.x, gameObjs.puck.y, gameObjs.puck.w, gameObjs.puck.h);
-			ctx.rect(gameObjs.leftpaddle.x, gameObjs.leftpaddle.y, gameObjs.leftpaddle.w, gameObjs.leftpaddle.h);
-			ctx.rect(gameObjs.rightpaddle.x, gameObjs.rightpaddle.y, gameObjs.rightpaddle.w, gameObjs.rightpaddle.h); 
+			ctx.rect(gameObjs["xxxxx"].puck.x, gameObjs["xxxxx"].puck.y, gameObjs["xxxxx"].puck.w, gameObjs["xxxxx"].puck.h);
+			ctx.rect(gameObjs["xxxxx"].leftpaddle.x, gameObjs["xxxxx"].leftpaddle.y, gameObjs["xxxxx"].leftpaddle.w, gameObjs["xxxxx"].leftpaddle.h);
+			ctx.rect(gameObjs["xxxxx"].rightpaddle.x, gameObjs["xxxxx"].rightpaddle.y, gameObjs["xxxxx"].rightpaddle.w, gameObjs["xxxxx"].rightpaddle.h); 
 			ctx.stroke();
-			if (gameObjs.leftpaddle.score !== player1Score || gameObjs.rightpaddle.score !== player2Score) {
+			if (gameObjs["xxxxx"].leftpaddle.score !== player1Score || gameObjs["xxxxx"].rightpaddle.score !== player2Score) {
 				$('#player1Score').empty();
 				$('#player2Score').empty();
-				$('#player1Score').append(gameObjs.leftpaddle.score);
-				$('#player2Score').append(gameObjs.rightpaddle.score);
-				player1Score = gameObjs.leftpaddle.score;
-				player2Score = gameObjs.rightpaddle.score;
+				$('#player1Score').append(gameObjs["xxxxx"].leftpaddle.score);
+				$('#player2Score').append(gameObjs["xxxxx"].rightpaddle.score);
+				player1Score = gameObjs["xxxxx"].leftpaddle.score;
+				player2Score = gameObjs["xxxxx"].rightpaddle.score;
 			}
-			if (gameObjs.leftpaddle.win) {
+			if (gameObjs["xxxxx"].leftpaddle.score === 11) {
 				winnerElem.append("player 1 wins");
 			}
-			if (gameObjs.rightpaddle.win) {
+			if (gameObjs["xxxxx"].rightpaddle.score === 11) {
 				winnerElem.append("player 2 wins");
 			}
 		}
 	};
 	
 	$(window).on('unload', function(e) {
+		// send route + disconnect
 		connection.send('disconnect');
 	});
 });

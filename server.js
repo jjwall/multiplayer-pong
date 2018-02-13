@@ -1,3 +1,10 @@
+// TO DO:
+// Create Join button
+// Hide Start / Reset button
+// Until at least 2 players have joined
+// Create dynamic routes
+// Create landing page
+
 var express = require('express');
 var WebSocket = require('ws');
 var http = require('http');
@@ -24,8 +31,7 @@ var gameObjs = {
 		w: 10,
 		h: 50,
 		vely: 6,
-		score: 0,
-		win: false
+		score: 0
 	},
 	rightpaddle: {
 		x: 740,
@@ -33,9 +39,9 @@ var gameObjs = {
 		w: 10,
 		h: 50,
 		vely: 6,
-		score: 0,
-		win: false
-	}
+		score: 0
+	},
+	players: 0
 }
 
 // function that calculates puck's Y velocity based on where puck hits the paddle
@@ -55,11 +61,13 @@ function puckYVal(paddlepos, puckpos) {
 		return 0;
 }
 
+var concurrentGames = {};
+
 var gameObjsString;
 
 var gameFrames;
 
-var gameState;
+var serverOnline = false;
 
 var players = 0;
 
@@ -70,142 +78,163 @@ wss.on('connection', function(connection) {
 	
 	function startGame() {
 		gameFrames = setInterval(function() {
-			if (!gameState) {
-				clearInterval(gameFrames);
-			}
-			if (gameObjs.puck.x >= 740) {
-				// player 1 scores
-				gameObjs.leftpaddle.score++;
-				resetPuck();
-			}
-			if (gameObjs.puck.y <=0 || gameObjs.puck.y >= 490) {
-				gameObjs.puck.vely = gameObjs.puck.vely * (-1);
-			}
-			if (gameObjs.puck.x <= 0) {
-				// player 2 scores
-				gameObjs.rightpaddle.score++;
-				resetPuck();
-			 }
-			// left paddle collision detection
-			if (gameObjs.puck.y + gameObjs.puck.h >= gameObjs.leftpaddle.y
-				&& gameObjs.puck.y <= gameObjs.leftpaddle.y + gameObjs.leftpaddle.h
-				&& gameObjs.puck.x <= gameObjs.leftpaddle.w) {
-					var paddlePos = gameObjs.leftpaddle.y + gameObjs.leftpaddle.h;
-					var puckPos = gameObjs.puck.y + gameObjs.puck.h;
-					gameObjs.puck.vely = puckYVal(paddlePos, puckPos);
-					gameObjs.puck.velx = gameObjs.puck.velx * (-1);
-			}
-			// right paddle collision detection
-			if (gameObjs.puck.y + gameObjs.puck.h >= gameObjs.rightpaddle.y
-				&& gameObjs.puck.y <= gameObjs.rightpaddle.y + gameObjs.rightpaddle.h
-				&& gameObjs.puck.x >= 740 - gameObjs.rightpaddle.w) {
-					var paddlePos = gameObjs.rightpaddle.y + gameObjs.rightpaddle.h;
-					var puckPos = gameObjs.puck.y + gameObjs.puck.h;
-					gameObjs.puck.vely = puckYVal(paddlePos, puckPos);
-					gameObjs.puck.velx = gameObjs.puck.velx * (-1);
-			}
+			Object.keys(concurrentGames).forEach(gameObjs => {
+				if (concurrentGames[gameObjs].puck.x >= 740) {
+					// player 1 scores
+					concurrentGames[gameObjs].leftpaddle.score++;
+					resetPuck(gameObjs);
+				}
+				if (concurrentGames[gameObjs].puck.y <=0 || concurrentGames[gameObjs].puck.y >= 490) {
+					concurrentGames[gameObjs].puck.vely = concurrentGames[gameObjs].puck.vely * (-1);
+				}
+				if (concurrentGames[gameObjs].puck.x <= 0) {
+					// player 2 scores
+					concurrentGames[gameObjs].rightpaddle.score++;
+					resetPuck(gameObjs);
+				 }
+				// left paddle collision detection
+				if (concurrentGames[gameObjs].puck.y + concurrentGames[gameObjs].puck.h >= concurrentGames[gameObjs].leftpaddle.y
+					&& concurrentGames[gameObjs].puck.y <= concurrentGames[gameObjs].leftpaddle.y + concurrentGames[gameObjs].leftpaddle.h
+					&& concurrentGames[gameObjs].puck.x <= concurrentGames[gameObjs].leftpaddle.w) {
+						var paddlePos = concurrentGames[gameObjs].leftpaddle.y + concurrentGames[gameObjs].leftpaddle.h;
+						var puckPos = concurrentGames[gameObjs].puck.y + concurrentGames[gameObjs].puck.h;
+						concurrentGames[gameObjs].puck.vely = puckYVal(paddlePos, puckPos);
+						concurrentGames[gameObjs].puck.velx = concurrentGames[gameObjs].puck.velx * (-1);
+				}
+				// right paddle collision detection
+				if (concurrentGames[gameObjs].puck.y + concurrentGames[gameObjs].puck.h >= concurrentGames[gameObjs].rightpaddle.y
+					&& concurrentGames[gameObjs].puck.y <= concurrentGames[gameObjs].rightpaddle.y + concurrentGames[gameObjs].rightpaddle.h
+					&& concurrentGames[gameObjs].puck.x >= 740 - concurrentGames[gameObjs].rightpaddle.w) {
+						var paddlePos = concurrentGames[gameObjs].rightpaddle.y + concurrentGames[gameObjs].rightpaddle.h;
+						var puckPos = concurrentGames[gameObjs].puck.y + concurrentGames[gameObjs].puck.h;
+						concurrentGames[gameObjs].puck.vely = puckYVal(paddlePos, puckPos);
+						concurrentGames[gameObjs].puck.velx = concurrentGames[gameObjs].puck.velx * (-1);
+				}
+					
+				concurrentGames[gameObjs].puck.x += concurrentGames[gameObjs].puck.velx;
+				concurrentGames[gameObjs].puck.y += concurrentGames[gameObjs].puck.vely;
 				
-			gameObjs.puck.x += gameObjs.puck.velx;
-			gameObjs.puck.y += gameObjs.puck.vely;
-			
-			gameObjsString = JSON.stringify(gameObjs);
-			
-			wss.clients.forEach(client => {
-				client.send(gameObjsString);
-			});
+				gameObjsString = JSON.stringify(concurrentGames);
+				
+				wss.clients.forEach(client => {
+					client.send(gameObjsString);
+				});
+			})
 		}, 20);
 	}
 	
 	// if a goal is scored this function is trigged
-	function resetPuck() {
-		clearInterval(gameFrames);
-		
-		if (gameObjs.leftpaddle.score === 11 || gameObjs.rightpaddle.score === 11) {
-			gameState = false;
-			if (gameObjs.leftpaddle.score === 11) {
-				gameObjs.leftpaddle.win = true;
-			}
-			if (gameObjs.rightpaddle.score === 11) {
-				gameObjs.rightpaddle.win = true;
-			}
+	function resetPuck(route) {
+		// a player scored 11, end game and send resting values
+		if (concurrentGames[route].leftpaddle.score === 11 || concurrentGames[route].rightpaddle.score === 11) {
+			concurrentGames[route].puck.x = 375;
+			concurrentGames[route].puck.y = 240;
+			concurrentGames[route].leftpaddle.y = 225;
+			concurrentGames[route].rightpaddle.y = 225;
+			concurrentGames[route].puck.velx = 0;
+			concurrentGames[route].puck.vely = 0;
 		}
-		
-		gameObjsString = JSON.stringify(gameObjs);
-			// update score and send winner results
-		wss.clients.forEach(client => {
-			client.send(gameObjsString);
-		});
-		
-		if (gameObjs.leftpaddle.score < 11 && gameObjs.rightpaddle.score < 11) {
-			gameObjs.puck.x = 375;
-			gameObjs.puck.y = 240;
-			gameObjs.puck.velx = gameObjs.puck.velx * (-1);
-			gameObjs.leftpaddle.y = 225;
-			gameObjs.rightpaddle.y = 225;
+		// each players score is below 11, reset puck position and continue game
+		if (concurrentGames[route].leftpaddle.score < 11 && concurrentGames[route].rightpaddle.score < 11) {
+			concurrentGames[route].puck.x = 375;
+			concurrentGames[route].puck.y = 240;
+			var storeVelY = concurrentGames[route].puck.vely;
+			var storeVelX = concurrentGames[route].puck.velx;
+			concurrentGames["xxxxx"].puck.vely = 0;
+			concurrentGames[route].puck.velx = 0;
 			setTimeout(function(){
-				if (gameState) {
-					startGame();
+				// if undefined then don't execute this block of code or server will die.
+				if (concurrentGames[route] != undefined) { 
+					concurrentGames[route].puck.vely = storeVelY;
+					concurrentGames[route].puck.velx = storeVelX * (-1);
 				}
 			}, 3000);
 		}
 	}
 	
 	connection.on('message', function(message) {
+		
+		// need to work on this more
+		// will be utilizing -> concurrentGames["xxxxx"] = gameObjs;
+		// for VERY FIRST player who joins game
+		if (message == 'join') {
+			// receive route + join
+			// if (concurrentGames["xxxxx"] == undefined) {
+				//concurrentGames["xxxxx"] = gameObjs;
+			//}
+			concurrentGames["xxxxx"].players++;
+			connection.send(concurrentGames["xxxxx"].players);
+		}
+		
+		// need to work on this more
+		// see connection.on('close'...
 		if (message == 'disconnect') {
+			// receive route + disconnect
+			if (concurrentGames["xxxxx"].players > 0) {
+				concurrentGames["xxxxx"].players--;
+			}
+			if (concurrentGames["xxxxx"].players === 0) {
+				delete concurrentGames["xxxxx"];
+			}
 			connection.terminate();
 		}
 		
 		if (message == '1 up') {
+			// receive route + 1 + up
 			if (gameObjs.leftpaddle.y >= 0) {
 				gameObjs.leftpaddle.y -= gameObjs.leftpaddle.vely;
 			}
 		}
 		
 		if (message == '1 down') {
+			// receive route + 1 + down
 			if (gameObjs.leftpaddle.y <= 450) {
 				gameObjs.leftpaddle.y += gameObjs.leftpaddle.vely;
 			}
 		}
 		
 		if (message == '2 up') {
+			// receive route + 2 + up
 			if (gameObjs.rightpaddle.y >= 0) {
 				gameObjs.rightpaddle.y -= gameObjs.rightpaddle.vely;
 			}
 		}
 		
 		if (message == '2 down') {
+			// receive route + 2 + up
 			if (gameObjs.rightpaddle.y <= 450) {
 				gameObjs.rightpaddle.y += gameObjs.rightpaddle.vely;
 			}
 		}
 		
 		if (message == 'start') {
-			if (!gameState) {
-				gameState = true;
-				clearInterval(gameFrames);
-				gameObjs.puck.x = 375;
-				gameObjs.puck.y = 240;
-				gameObjs.leftpaddle.y = 225;
-				gameObjs.rightpaddle.y = 225;
-				gameObjs.leftpaddle.score = 0;
-				gameObjs.rightpaddle.score = 0;
-				gameObjs.leftpaddle.win = false;
-				gameObjs.rightpaddle.win = false;
-				gameObjs.puck.velx = 9;
-				gameObjs.puck.vely = 0;
-				startGame();
-			}
+			// starting values
+			concurrentGames["xxxxx"] = gameObjs; // -> will go on "join" block
+			concurrentGames["xxxxx"].puck.x = 375;
+			concurrentGames["xxxxx"].puck.y = 240;
+			concurrentGames["xxxxx"].leftpaddle.y = 225;
+			concurrentGames["xxxxx"].rightpaddle.y = 225;
+			concurrentGames["xxxxx"].leftpaddle.score = 0;
+			concurrentGames["xxxxx"].rightpaddle.score = 0;
+			concurrentGames["xxxxx"].puck.velx = 9;
+			concurrentGames["xxxxx"].puck.vely = 0;
 		}
 	});
 	
+	// this is temporary for testing purposes
+	// these type of operations will be called in "disconnect" block
 	connection.on('close', function(close) {
 		players--;
 		if (players === 0) {
-			gameState = false;
-			clearInterval(gameFrames);
+			delete concurrentGames["xxxxx"];
 		}
 		console.log(`A client left the game there are ${players} players left.`);
 	});
+	
+	if (!serverOnline) {
+		serverOnline = true;
+		startGame();
+	}
 });
 
 app.use(express.static('./public'));
