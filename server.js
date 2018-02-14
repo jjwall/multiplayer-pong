@@ -1,9 +1,15 @@
 // TO DO:
-// Create Join button
-// Hide Start / Reset button
-// Until at least 2 players have joined
-// Create dynamic routes
+// 1.
+// Hide Start / Reset button Until 2 players have joined
+// 2.
+// Create dynamic routes and route key system
+// 3.
+// Create "restart" gameObjs so we can default to it when games end (this is a weird bug, maybe test again when dynamic routes have been implemented)
+///////// -> could also send resting game values when a player joins. Might make hiding join button a bit more important so curious spectators don't ruin a game
+// 4.
 // Create landing page
+// 5.
+// Enhance collision using AABB function
 
 var express = require('express');
 var WebSocket = require('ws');
@@ -69,22 +75,24 @@ var gameFrames;
 
 var serverOnline = false;
 
-var players = 0;
+//var players = 0;
 
 wss.on('connection', function(connection) {
 	console.log((new Date()) + " Connection accepted.");
-	players++;
-	connection.send(players);
+	//players++;
+	//connection.send(players);
 	
 	function startGame() {
 		gameFrames = setInterval(function() {
 			Object.keys(concurrentGames).forEach(gameObjs => {
+				// gameObjs are the "keys" for the concurrentGames object, i.e. the routes
 				if (concurrentGames[gameObjs].puck.x >= 740) {
 					// player 1 scores
 					concurrentGames[gameObjs].leftpaddle.score++;
 					resetPuck(gameObjs);
 				}
 				if (concurrentGames[gameObjs].puck.y <=0 || concurrentGames[gameObjs].puck.y >= 490) {
+					// ball bounces on top or bottom wall
 					concurrentGames[gameObjs].puck.vely = concurrentGames[gameObjs].puck.vely * (-1);
 				}
 				if (concurrentGames[gameObjs].puck.x <= 0) {
@@ -140,7 +148,7 @@ wss.on('connection', function(connection) {
 			concurrentGames[route].puck.y = 240;
 			var storeVelY = concurrentGames[route].puck.vely;
 			var storeVelX = concurrentGames[route].puck.velx;
-			concurrentGames["xxxxx"].puck.vely = 0;
+			concurrentGames[route].puck.vely = 0;
 			concurrentGames[route].puck.velx = 0;
 			setTimeout(function(){
 				// if undefined then don't execute this block of code or server will die.
@@ -153,82 +161,67 @@ wss.on('connection', function(connection) {
 	}
 	
 	connection.on('message', function(message) {
+		var route = message.substring(0, 5);
 		
-		// need to work on this more
-		// will be utilizing -> concurrentGames["xxxxx"] = gameObjs;
-		// for VERY FIRST player who joins game
-		if (message == 'join') {
-			// receive route + join
-			// if (concurrentGames["xxxxx"] == undefined) {
-				//concurrentGames["xxxxx"] = gameObjs;
-			//}
-			concurrentGames["xxxxx"].players++;
-			connection.send(concurrentGames["xxxxx"].players);
+		if (message.substring(6, 10) == 'join') {			
+			if (concurrentGames[route] == undefined) {
+				concurrentGames[route] = gameObjs;
+			}
+			concurrentGames[route].players++;
+			
+			// should send only to client who clicked "join"
+			connection.send(concurrentGames[route].players);
 		}
 		
-		// need to work on this more
-		// see connection.on('close'...
-		if (message == 'disconnect') {
-			// receive route + disconnect
-			if (concurrentGames["xxxxx"].players > 0) {
-				concurrentGames["xxxxx"].players--;
-			}
-			if (concurrentGames["xxxxx"].players === 0) {
-				delete concurrentGames["xxxxx"];
-			}
+		if (message.substring(6, 16) == 'disconnect') {
 			connection.terminate();
-		}
-		
-		if (message == '1 up') {
-			// receive route + 1 + up
-			if (gameObjs.leftpaddle.y >= 0) {
-				gameObjs.leftpaddle.y -= gameObjs.leftpaddle.vely;
+			if (concurrentGames[route].players > 0) {
+				concurrentGames[route].players--;
+				if (concurrentGames[route].players === 0) {
+					delete concurrentGames[route];
+				}
 			}
 		}
 		
-		if (message == '1 down') {
-			// receive route + 1 + down
-			if (gameObjs.leftpaddle.y <= 450) {
-				gameObjs.leftpaddle.y += gameObjs.leftpaddle.vely;
+		if (message.substring(6, 10) == '1 up') {
+			if (concurrentGames[route].leftpaddle.y >= 0) {
+				concurrentGames[route].leftpaddle.y -= concurrentGames[route].leftpaddle.vely;
 			}
 		}
 		
-		if (message == '2 up') {
-			// receive route + 2 + up
-			if (gameObjs.rightpaddle.y >= 0) {
-				gameObjs.rightpaddle.y -= gameObjs.rightpaddle.vely;
+		if (message.substring(6, 12) == '1 down') {
+			if (concurrentGames[route].leftpaddle.y <= 450) {
+				concurrentGames[route].leftpaddle.y += concurrentGames[route].leftpaddle.vely;
 			}
 		}
 		
-		if (message == '2 down') {
-			// receive route + 2 + up
-			if (gameObjs.rightpaddle.y <= 450) {
-				gameObjs.rightpaddle.y += gameObjs.rightpaddle.vely;
+		if (message.substring(6, 10) == '2 up') {
+			if (concurrentGames[route].rightpaddle.y >= 0) {
+				concurrentGames[route].rightpaddle.y -= concurrentGames[route].rightpaddle.vely;
 			}
 		}
 		
-		if (message == 'start') {
-			// starting values
-			concurrentGames["xxxxx"] = gameObjs; // -> will go on "join" block
-			concurrentGames["xxxxx"].puck.x = 375;
-			concurrentGames["xxxxx"].puck.y = 240;
-			concurrentGames["xxxxx"].leftpaddle.y = 225;
-			concurrentGames["xxxxx"].rightpaddle.y = 225;
-			concurrentGames["xxxxx"].leftpaddle.score = 0;
-			concurrentGames["xxxxx"].rightpaddle.score = 0;
-			concurrentGames["xxxxx"].puck.velx = 9;
-			concurrentGames["xxxxx"].puck.vely = 0;
+		if (message.substring(6, 12) == '2 down') {
+			if (concurrentGames[route].rightpaddle.y <= 450) {
+				concurrentGames[route].rightpaddle.y += concurrentGames[route].rightpaddle.vely;
+			}
 		}
-	});
-	
-	// this is temporary for testing purposes
-	// these type of operations will be called in "disconnect" block
-	connection.on('close', function(close) {
-		players--;
-		if (players === 0) {
-			delete concurrentGames["xxxxx"];
+		
+		if (message.substring(6, 11) == 'start') {
+			// this undefined check may be unnecessary, might be able to
+			// hide start button until 2 players have joined
+			if (concurrentGames[route] != undefined) {
+				// starting values
+				concurrentGames[route].puck.x = 375;
+				concurrentGames[route].puck.y = 240;
+				concurrentGames[route].leftpaddle.y = 225;
+				concurrentGames[route].rightpaddle.y = 225;
+				concurrentGames[route].leftpaddle.score = 0;
+				concurrentGames[route].rightpaddle.score = 0;
+				concurrentGames[route].puck.velx = 9;
+				concurrentGames[route].puck.vely = 0;
+			}
 		}
-		console.log(`A client left the game there are ${players} players left.`);
 	});
 	
 	if (!serverOnline) {
