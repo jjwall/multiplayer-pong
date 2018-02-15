@@ -68,8 +68,14 @@ $(document).ready(function () {
 		if (keyUp) {
 			connection.send(route + ' ' + currentPlayer + ' up');
 		}
+		else {
+			connection.send(route + ' ' + currentPlayer + ' up false');
+		}
 		if (keyDown) {
 			connection.send(route + ' ' + currentPlayer + ' down');
+		}
+		else {
+			connection.send(route + ' ' + currentPlayer + ' down false');
 		}
 		if (message.data.length === 1) {
 			// if message data length is 1 then we are receiving player join info

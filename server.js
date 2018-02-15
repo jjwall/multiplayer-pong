@@ -1,15 +1,17 @@
 // TO DO:
-// 1.
-// Hide Start / Reset button Until 2 players have joined
-// 2.
-// Create dynamic routes and route key system
+
+// 1. 
+// FIX RIGHT PADDLE CONTROLS
+// 2. 
+// Work on home page and match making system
 // 3.
-// Create "restart" gameObjs so we can default to it when games end (this is a weird bug, maybe test again when dynamic routes have been implemented)
-///////// -> could also send resting game values when a player joins. Might make hiding join button a bit more important so curious spectators don't ruin a game
+// Hide Start / Reset button Until 2 players have joined
 // 4.
 // Create landing page
 // 5.
 // Enhance collision using AABB function
+// 6.
+// Add acceleration to paddle movement
 
 var express = require('express');
 var WebSocket = require('ws');
@@ -40,6 +42,8 @@ function gameObjs(puck, leftpaddle, rightpaddle, players = 0) {
 			w: 10,
 			h: 50,
 			vely: 6,
+			up: false,
+			down: false,
 			score: 0
 		};
 	this.rightpaddle = 
@@ -49,6 +53,8 @@ function gameObjs(puck, leftpaddle, rightpaddle, players = 0) {
 		w: 10,
 		h: 50,
 		vely: 6,
+		up: false,
+		down: false,
 		score: 0
 	};
 	this.players = players;
@@ -90,6 +96,18 @@ wss.on('connection', function(connection) {
 		gameFrames = setInterval(function() {
 			Object.keys(concurrentGames).forEach(gameObjs => {
 				// gameObjs are the "keys" for the concurrentGames object, i.e. the routes
+				
+				// controls for left paddle
+				if (concurrentGames[gameObjs].leftpaddle.up && concurrentGames[gameObjs].leftpaddle.y >= 0) {
+					concurrentGames[gameObjs].leftpaddle.y -= concurrentGames[gameObjs].leftpaddle.vely;
+				}
+				if (concurrentGames[gameObjs].leftpaddle.down && concurrentGames[gameObjs].leftpaddle.y <= 450) {
+					concurrentGames[gameObjs].leftpaddle.y += concurrentGames[gameObjs].leftpaddle.vely;
+				}
+				
+				// NEW RIGHT PADDLE CONTROLS GO HERE
+				
+				
 				if (concurrentGames[gameObjs].puck.x >= 740) {
 					// player 1 scores
 					concurrentGames[gameObjs].leftpaddle.score++;
@@ -193,28 +211,28 @@ wss.on('connection', function(connection) {
 		}
 		
 		if (message.substring(6, 10) == '1 up') {
-			//route = message.substring(0, 5);
-			if (concurrentGames[route].leftpaddle.y >= 0) { //&& message.substring(0, 5) === route) {
-				concurrentGames[route].leftpaddle.y -= concurrentGames[route].leftpaddle.vely;
-			}
+			concurrentGames[route].leftpaddle.up = true;
+		}
+		
+		if (message.substring(6, 16) == '1 up false') {
+			concurrentGames[route].leftpaddle.up = false;
 		}
 		
 		if (message.substring(6, 12) == '1 down') {
-			//route = message.substring(0, 5);
-			if (concurrentGames[route].leftpaddle.y <= 450) {// && message.substring(0, 5) === route) {
-				concurrentGames[route].leftpaddle.y += concurrentGames[route].leftpaddle.vely;
-			}
+			concurrentGames[route].leftpaddle.down = true;
+		}
+		
+		if (message.substring(6, 18) == '1 down false') {
+			concurrentGames[route].leftpaddle.down = false;
 		}
 		
 		if (message.substring(6, 10) == '2 up') {
-			//route = message.substring(0, 5);
 			if (concurrentGames[route].rightpaddle.y >= 0) {
 				concurrentGames[route].rightpaddle.y -= concurrentGames[route].rightpaddle.vely;
 			}
 		}
 		
 		if (message.substring(6, 12) == '2 down') {
-			//route = message.substring(0, 5);
 			if (concurrentGames[route].rightpaddle.y <= 450) {
 				concurrentGames[route].rightpaddle.y += concurrentGames[route].rightpaddle.vely;
 			}
