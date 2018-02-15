@@ -5,7 +5,17 @@ $(document).ready(function () {
 	var connection = new WebSocket('ws://localhost:8080');
 	//var connection = new WebSocket('wss://png-game.herokuapp.com/');
 	
-	var route = "xxxxx"; // -> will be an actual random key like x3Yj7
+	var route;
+	
+	console.log(window.location.href);
+
+	if (window.location.href.substring(7,8) === "l") {
+		route = window.location.href.substring(22,27);
+		console.log(route);
+	}
+	else if (window.location.href.substring(8,9) === "p") {
+		route = window.location.href.substring(28,33);
+	}
 	
 	var canvas = document.getElementById('pongTable');
 	var ctx = canvas.getContext('2d');

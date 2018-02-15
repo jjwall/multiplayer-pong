@@ -14,6 +14,7 @@
 var express = require('express');
 var WebSocket = require('ws');
 var http = require('http');
+var path = require('path');
 
 var app = express();
 var PORT = process.env.PORT || 8080;
@@ -22,32 +23,35 @@ var server = http.createServer(app);
 
 var wss = new WebSocket.Server({ server });
 
-var gameObjs = {
-	puck: {
-		x: 375,
-		y: 250,
-		w: 10,
-		h: 10,
-		velx: 0,
-		vely: 0
-	},
-	leftpaddle: {
-		x: 0,
-		y: 225,
-		w: 10,
-		h: 50,
-		vely: 6,
-		score: 0
-	},
-	rightpaddle: {
+function gameObjs(puck, leftpaddle, rightpaddle, players = 0) {
+	this.puck = 
+		{
+			x: 375,
+			y: 250,
+			w: 10,
+			h: 10,
+			velx: 0,
+			vely: 0
+		};
+	this.leftpaddle = 
+		{
+			x: 0,
+			y: 225,
+			w: 10,
+			h: 50,
+			vely: 6,
+			score: 0
+		};
+	this.rightpaddle = 
+		{
 		x: 740,
 		y: 225,
 		w: 10,
 		h: 50,
 		vely: 6,
 		score: 0
-	},
-	players: 0
+	};
+	this.players = players;
 }
 
 // function that calculates puck's Y velocity based on where puck hits the paddle
@@ -163,51 +167,61 @@ wss.on('connection', function(connection) {
 	connection.on('message', function(message) {
 		var route = message.substring(0, 5);
 		
-		if (message.substring(6, 10) == 'join') {			
+		if (message.substring(6, 10) == 'join') {
+			//route = message.substring(0, 5);
 			if (concurrentGames[route] == undefined) {
-				concurrentGames[route] = gameObjs;
+				concurrentGames[route] = new gameObjs();
 			}
 			concurrentGames[route].players++;
+			//console.log(concurrentGames);
 			
 			// should send only to client who clicked "join"
 			connection.send(concurrentGames[route].players);
 		}
 		
 		if (message.substring(6, 16) == 'disconnect') {
+			//route = message.substring(0, 5);
 			connection.terminate();
-			if (concurrentGames[route].players > 0) {
-				concurrentGames[route].players--;
-				if (concurrentGames[route].players === 0) {
-					delete concurrentGames[route];
+			if (concurrentGames[route]) {
+				if (concurrentGames[route].players > 0) {
+					concurrentGames[route].players--;
+					if (concurrentGames[route].players === 0) {
+						delete concurrentGames[route];
+					}
 				}
 			}
 		}
 		
 		if (message.substring(6, 10) == '1 up') {
-			if (concurrentGames[route].leftpaddle.y >= 0) {
+			//route = message.substring(0, 5);
+			if (concurrentGames[route].leftpaddle.y >= 0) { //&& message.substring(0, 5) === route) {
 				concurrentGames[route].leftpaddle.y -= concurrentGames[route].leftpaddle.vely;
 			}
 		}
 		
 		if (message.substring(6, 12) == '1 down') {
-			if (concurrentGames[route].leftpaddle.y <= 450) {
+			//route = message.substring(0, 5);
+			if (concurrentGames[route].leftpaddle.y <= 450) {// && message.substring(0, 5) === route) {
 				concurrentGames[route].leftpaddle.y += concurrentGames[route].leftpaddle.vely;
 			}
 		}
 		
 		if (message.substring(6, 10) == '2 up') {
+			//route = message.substring(0, 5);
 			if (concurrentGames[route].rightpaddle.y >= 0) {
 				concurrentGames[route].rightpaddle.y -= concurrentGames[route].rightpaddle.vely;
 			}
 		}
 		
 		if (message.substring(6, 12) == '2 down') {
+			//route = message.substring(0, 5);
 			if (concurrentGames[route].rightpaddle.y <= 450) {
 				concurrentGames[route].rightpaddle.y += concurrentGames[route].rightpaddle.vely;
 			}
 		}
 		
 		if (message.substring(6, 11) == 'start') {
+			//route = message.substring(0, 5);
 			// this undefined check may be unnecessary, might be able to
 			// hide start button until 2 players have joined
 			if (concurrentGames[route] != undefined) {
@@ -231,6 +245,14 @@ wss.on('connection', function(connection) {
 });
 
 app.use(express.static('./public'));
+
+app.get("/", function(req, res) {
+	res.sendFile(path.join(__dirname, "/public/home.html"));
+});
+
+app.get("/:route", function(req, res) {
+	res.sendFile(path.join(__dirname, "/public/game.html"));
+});
 
 server.listen(PORT, function () {
 	console.log(`app listening on port ${PORT}`);
