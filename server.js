@@ -25,6 +25,7 @@ var server = http.createServer(app);
 
 var wss = new WebSocket.Server({ server });
 
+// game objects constructor
 function gameObjs(puck, leftpaddle, rightpaddle, players = 0) {
 	this.puck = 
 		{
@@ -85,12 +86,8 @@ var gameFrames;
 
 var serverOnline = false;
 
-//var players = 0;
-
 wss.on('connection', function(connection) {
 	console.log((new Date()) + " Connection accepted.");
-	//players++;
-	//connection.send(players);
 	
 	function startGame() {
 		gameFrames = setInterval(function() {
@@ -104,21 +101,24 @@ wss.on('connection', function(connection) {
 				if (concurrentGames[gameObjs].leftpaddle.down && concurrentGames[gameObjs].leftpaddle.y <= 450) {
 					concurrentGames[gameObjs].leftpaddle.y += concurrentGames[gameObjs].leftpaddle.vely;
 				}
-				
-				// NEW RIGHT PADDLE CONTROLS GO HERE
-				
-				
+				// controls for right paddle
+				if ( concurrentGames[gameObjs].rightpaddle.up && concurrentGames[gameObjs].rightpaddle.y >= 0) {
+					concurrentGames[gameObjs].rightpaddle.y -= concurrentGames[gameObjs].rightpaddle.vely;
+				}
+				if (concurrentGames[gameObjs].rightpaddle.down && concurrentGames[gameObjs].rightpaddle.y <= 450) {
+					concurrentGames[gameObjs].rightpaddle.y += concurrentGames[gameObjs].rightpaddle.vely;
+				}
+				// player 1 scores
 				if (concurrentGames[gameObjs].puck.x >= 740) {
-					// player 1 scores
 					concurrentGames[gameObjs].leftpaddle.score++;
 					resetPuck(gameObjs);
 				}
+				// top and bottom wall collision for puck
 				if (concurrentGames[gameObjs].puck.y <=0 || concurrentGames[gameObjs].puck.y >= 490) {
-					// ball bounces on top or bottom wall
 					concurrentGames[gameObjs].puck.vely = concurrentGames[gameObjs].puck.vely * (-1);
 				}
+				// player 2 scores
 				if (concurrentGames[gameObjs].puck.x <= 0) {
-					// player 2 scores
 					concurrentGames[gameObjs].rightpaddle.score++;
 					resetPuck(gameObjs);
 				 }
@@ -140,7 +140,7 @@ wss.on('connection', function(connection) {
 						concurrentGames[gameObjs].puck.vely = puckYVal(paddlePos, puckPos);
 						concurrentGames[gameObjs].puck.velx = concurrentGames[gameObjs].puck.velx * (-1);
 				}
-					
+				// update the puck position	
 				concurrentGames[gameObjs].puck.x += concurrentGames[gameObjs].puck.velx;
 				concurrentGames[gameObjs].puck.y += concurrentGames[gameObjs].puck.vely;
 				
@@ -227,15 +227,25 @@ wss.on('connection', function(connection) {
 		}
 		
 		if (message.substring(6, 10) == '2 up') {
-			if (concurrentGames[route].rightpaddle.y >= 0) {
-				concurrentGames[route].rightpaddle.y -= concurrentGames[route].rightpaddle.vely;
-			}
+			concurrentGames[route].rightpaddle.up = true;
+			//if (concurrentGames[route].rightpaddle.y >= 0) {
+				//concurrentGames[route].rightpaddle.y -= concurrentGames[route].rightpaddle.vely;
+			//}
+		}
+		
+		if (message.substring(6, 16) == '2 up false') {
+			concurrentGames[route].rightpaddle.up = false;
 		}
 		
 		if (message.substring(6, 12) == '2 down') {
-			if (concurrentGames[route].rightpaddle.y <= 450) {
-				concurrentGames[route].rightpaddle.y += concurrentGames[route].rightpaddle.vely;
-			}
+			concurrentGames[route].rightpaddle.down = true;
+			//if (concurrentGames[route].rightpaddle.y <= 450) {
+				//concurrentGames[route].rightpaddle.y += concurrentGames[route].rightpaddle.vely;
+			//}
+		}
+		
+		if (message.substring(6, 18) == '2 down false') {
+			concurrentGames[route].rightpaddle.down = false;
 		}
 		
 		if (message.substring(6, 11) == 'start') {
