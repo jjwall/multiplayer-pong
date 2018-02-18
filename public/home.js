@@ -16,6 +16,13 @@ $(document).ready(function () {
 			url: "/games",
 			type: 'GET',
 			success: function(data) {
+				$('#games').empty();
+				$('#games').append(`
+					<tr>
+						<th>Game ID</th>
+						<th>Players</th>
+						<th>Join / Spectate</th>
+					</tr>`);
 				Object.keys(data).forEach(game => {
 					var joinSpectate;
 					totalGames++;
@@ -27,11 +34,11 @@ $(document).ready(function () {
 						joinSpectate = "Join";
 					
 					$('#games').append(`
-					<tr>
-						<td>${game}</td>
-						<td>(${data[game].players}/2)</td>
-						<td><button class="gameJoin" data-index=${game}>${joinSpectate}</button></<td>
-					</tr>`);
+						<tr>
+							<td>${game}</td>
+							<td>(${data[game].players}/2)</td>
+							<td><button class="gameJoin" data-index=${game}>${joinSpectate}</button></<td>
+						</tr>`);
 				});
 				
 				$('#status').empty();

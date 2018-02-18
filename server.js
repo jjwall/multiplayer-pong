@@ -1,22 +1,22 @@
 // TO DO:
 
 // 1. 
-// Make Error 404 page
-// 2.
 // Swap out start button with "ready up" system so game doesn't
 // start until both players have clicked "ready"
-// 3.
+// 2.
 // Make angle sharper for paddle / puck bounce off collision
-// 4.
+// 3.
 // Enhance collision using AABB function
-// 5.
+// 4.
 // Add acceleration to paddle movement
-// 6.
+// 5.
 // Add message screen to games that notifies when players have joined
 // the game, when they are ready, and when they have left games
 // -> Can also notify players of spectators joining the game
-// 7.
+// 6.
 // Add mobile support and controls
+// 7.
+// Add error 404 page not found
 
 var express = require('express');
 var WebSocket = require('ws');
@@ -285,6 +285,10 @@ app.get("/", function(req, res) {
 
 app.get("/games", function(req, res) {
 	res.send(concurrentGames);
+});
+
+app.get("/error", function(req, res) {
+	res.sendFile(path.join(__dirname, "/public/error.html"));
 });
 
 app.get("/:route", function(req, res) {
