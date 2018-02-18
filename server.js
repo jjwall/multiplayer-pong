@@ -287,9 +287,9 @@ app.get("/games", function(req, res) {
 	res.send(concurrentGames);
 });
 
-app.get("/error", function(req, res) {
-	res.sendFile(path.join(__dirname, "/public/error.html"));
-});
+// app.get("/error", function(req, res) {
+	// res.sendFile(path.join(__dirname, "/public/error.html"));
+// });
 
 app.get("/:route", function(req, res) {
 	res.sendFile(path.join(__dirname, "/public/game.html"));
