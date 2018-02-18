@@ -4,17 +4,15 @@
 // Swap out start button with "ready up" system so game doesn't
 // start until both players have clicked "ready"
 // 2.
-// Make angle sharper for paddle / puck bounce off collision
-// 3.
 // Enhance collision using AABB function
-// 4.
-// Add acceleration to paddle movement
-// 5.
-// Add message screen to games that notifies when players have joined
+// 3.
+// Add message alerts to games that notifies when players have joined
 // the game, when they are ready, and when they have left games
 // -> Can also notify players of spectators joining the game
+// 5.
+// Add Acceleration for right paddle
 // 6.
-// Add error 404 page not found
+// Refactor gameFrames logic so leftpaddle/rightpaddle logic isn't hard coded
 
 var express = require('express');
 var WebSocket = require('ws');
@@ -45,9 +43,10 @@ function gameObjs(puck, leftpaddle, rightpaddle, players = 0) {
 			y: 225,
 			w: 10,
 			h: 50,
-			vely: 6,
+			vely: 0,
 			up: false,
 			down: false,
+			deaccelerator: null,
 			score: 0
 		};
 	this.rightpaddle = 
@@ -59,6 +58,7 @@ function gameObjs(puck, leftpaddle, rightpaddle, players = 0) {
 		vely: 6,
 		up: false,
 		down: false,
+		deaccelerator: null,
 		score: 0
 	};
 	this.players = players;
@@ -70,12 +70,12 @@ function puckYVal(paddlepos, puckpos) {
 	// i.e. top half of the paddle
 	if (puckpos < halfPaddle) {
 		var ratio = (halfPaddle - puckpos) / 100;
-		return -20 * ratio;
+		return -30 * ratio;
 	}
 	// i.e. bottom half of the paddle
 	else if (puckpos > halfPaddle) {
 		var ratio = (puckpos - halfPaddle) / 100;
-		return 20 * ratio;
+		return 30 * ratio;
 		}
 	else 
 		return 0;
@@ -99,11 +99,35 @@ wss.on('connection', function(connection) {
 				
 				// controls for left paddle
 				if (concurrentGames[gameObjs].leftpaddle.up && concurrentGames[gameObjs].leftpaddle.y >= 0) {
-					concurrentGames[gameObjs].leftpaddle.y -= concurrentGames[gameObjs].leftpaddle.vely;
+					concurrentGames[gameObjs].leftpaddle.deaccelerator = "-";
+					concurrentGames[gameObjs].leftpaddle.y -= ((concurrentGames[gameObjs].leftpaddle.vely)^2)/2;
+					if (concurrentGames[gameObjs].leftpaddle.vely < 13) {
+						concurrentGames[gameObjs].leftpaddle.vely+=2;
+					}
 				}
-				if (concurrentGames[gameObjs].leftpaddle.down && concurrentGames[gameObjs].leftpaddle.y <= 450) {
-					concurrentGames[gameObjs].leftpaddle.y += concurrentGames[gameObjs].leftpaddle.vely;
+				else if (concurrentGames[gameObjs].leftpaddle.down && concurrentGames[gameObjs].leftpaddle.y <= 450) {
+					concurrentGames[gameObjs].leftpaddle.deaccelerator = "+";
+					concurrentGames[gameObjs].leftpaddle.y += ((concurrentGames[gameObjs].leftpaddle.vely)^2)/2;
+					if (concurrentGames[gameObjs].leftpaddle.vely < 13) {
+						concurrentGames[gameObjs].leftpaddle.vely+=2;
+					}
 				}
+				else {
+					if (concurrentGames[gameObjs].leftpaddle.y >= 0 && concurrentGames[gameObjs].leftpaddle.y <= 450) {
+						if (concurrentGames[gameObjs].leftpaddle.vely > 0) {
+							concurrentGames[gameObjs].leftpaddle.vely-=2;
+							if (concurrentGames[gameObjs].leftpaddle.deaccelerator === "+") {
+								concurrentGames[gameObjs].leftpaddle.y += ((concurrentGames[gameObjs].leftpaddle.vely)^2)/2;
+							}
+							if (concurrentGames[gameObjs].leftpaddle.deaccelerator === "-") {
+								concurrentGames[gameObjs].leftpaddle.y -= ((concurrentGames[gameObjs].leftpaddle.vely)^2)/2;
+							}
+						}
+					}
+				}
+				
+				// TODO: Add acceleration for right paddle
+				
 				// controls for right paddle
 				if ( concurrentGames[gameObjs].rightpaddle.up && concurrentGames[gameObjs].rightpaddle.y >= 0) {
 					concurrentGames[gameObjs].rightpaddle.y -= concurrentGames[gameObjs].rightpaddle.vely;
@@ -163,7 +187,9 @@ wss.on('connection', function(connection) {
 			concurrentGames[route].puck.x = 375;
 			concurrentGames[route].puck.y = 240;
 			concurrentGames[route].leftpaddle.y = 225;
+			concurrentGames[route].leftpaddle.deaccelerator = null;
 			concurrentGames[route].rightpaddle.y = 225;
+			concurrentGames[route].rightpaddle.deaccelerator = null;
 			concurrentGames[route].puck.velx = 0;
 			concurrentGames[route].puck.vely = 0;
 		}
@@ -189,19 +215,16 @@ wss.on('connection', function(connection) {
 		var route = message.substring(0, 5);
 		
 		if (message.substring(6, 10) == 'join') {
-			//route = message.substring(0, 5);
 			if (concurrentGames[route] == undefined) {
 				concurrentGames[route] = new gameObjs();
 			}
 			concurrentGames[route].players++;
-			//console.log(concurrentGames);
 			
 			// should send only to client who clicked "join"
 			connection.send(concurrentGames[route].players);
 		}
 		
 		if (message.substring(6, 16) == 'disconnect') {
-			//route = message.substring(0, 5);
 			connection.terminate();
 			if (concurrentGames[route]) {
 				if (concurrentGames[route].players > 0) {
@@ -231,9 +254,6 @@ wss.on('connection', function(connection) {
 		
 		if (message.substring(6, 10) == '2 up') {
 			concurrentGames[route].rightpaddle.up = true;
-			//if (concurrentGames[route].rightpaddle.y >= 0) {
-				//concurrentGames[route].rightpaddle.y -= concurrentGames[route].rightpaddle.vely;
-			//}
 		}
 		
 		if (message.substring(6, 16) == '2 up false') {
@@ -242,9 +262,6 @@ wss.on('connection', function(connection) {
 		
 		if (message.substring(6, 12) == '2 down') {
 			concurrentGames[route].rightpaddle.down = true;
-			//if (concurrentGames[route].rightpaddle.y <= 450) {
-				//concurrentGames[route].rightpaddle.y += concurrentGames[route].rightpaddle.vely;
-			//}
 		}
 		
 		if (message.substring(6, 18) == '2 down false') {
@@ -252,13 +269,14 @@ wss.on('connection', function(connection) {
 		}
 		
 		if (message.substring(6, 11) == 'start') {
-			//route = message.substring(0, 5);
 			// this undefined check may be unnecessary, might be able to
 			// hide start button until 2 players have joined
 			if (concurrentGames[route] != undefined) {
 				// starting values
 				concurrentGames[route].puck.x = 375;
 				concurrentGames[route].puck.y = 240;
+				concurrentGames[route].leftpaddle.deaccelerator = null;
+				concurrentGames[route].rightpaddle.deaccelerator = null;
 				concurrentGames[route].leftpaddle.y = 225;
 				concurrentGames[route].rightpaddle.y = 225;
 				concurrentGames[route].leftpaddle.score = 0;
@@ -284,10 +302,6 @@ app.get("/", function(req, res) {
 app.get("/games", function(req, res) {
 	res.send(concurrentGames);
 });
-
-// app.get("/error", function(req, res) {
-	// res.sendFile(path.join(__dirname, "/public/error.html"));
-// });
 
 app.get("/:route", function(req, res) {
 	res.sendFile(path.join(__dirname, "/public/game.html"));

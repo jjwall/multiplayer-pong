@@ -69,8 +69,7 @@ $(document).ready(function () {
 			keyDown = false;
 		}
 	}
-	
-	var doOnceVar = false;
+
 	// mobile joystick controls
 	joystick.on('dir:up dir:down', function(evt, data) {
 		if (evt.type == 'dir:up') {
@@ -81,19 +80,7 @@ $(document).ready(function () {
 			keyUp = false;
 			keyDown = true;
 		}
-		// mobile test stuff
-		if (!doOnceVar) {
-			doOnceVar = true;
-			doOnce();
-		}
 	});
-	
-	// mobile test stuff 
-	function doOnce() {
-		connection.send(route + ' join');
-		$('#joinButton').hide();
-	}
-	// end
 	
 	joystick.on('start end', function(evt, data) {
 		if (evt.type == 'end') {
