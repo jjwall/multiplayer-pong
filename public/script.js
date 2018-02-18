@@ -15,6 +15,12 @@ $(document).ready(function () {
 		route = window.location.href.substring(31,36);
 	}
 	
+	var joystick = 
+		nipplejs.create({
+			zone: document.getElementById('joystickWrapper'),
+			color: 'white'
+		});
+	
 	var canvas = document.getElementById('pongTable');
 	var ctx = canvas.getContext('2d');
 	var winnerElem = $('#winner');
@@ -29,12 +35,7 @@ $(document).ready(function () {
 	ctx.rect(740, 225, 10, 50);
 	ctx.stroke();
 	
-	// connection.onopen = function () {
-		// console.log(connection);
-	// };
-	
 	$('#startButton').on('click', function() {
-		// send route + start
 		connection.send(route + ' start');
 	});
 	
@@ -43,6 +44,7 @@ $(document).ready(function () {
 		$('#joinButton').hide();
 	});
 	
+	// keyboard controls
 	window.onkeydown = function(e) {
 		if (e.keyCode === 38) {
 			keyUp = true;
@@ -60,6 +62,25 @@ $(document).ready(function () {
 			keyDown = false;
 		}
 	}
+	
+	// mobile joystick controls
+	joystick.on('dir:up dir:down', function(evt, data) {
+		if (evt.type == 'dir:up') {
+			keyDown = false;
+			keyUp = true;
+		}
+		if (evt.type == 'dir:down') {
+			keyUp = false;
+			keyDown = true;
+		}
+	});
+	
+	joystick.on('start end', function(evt, data) {
+		if (evt.type == 'end') {
+			keyUp = false;
+			keyDown = false;
+		}
+	});
 
 	connection.onmessage = function (message) {
 		winnerElem.empty();
@@ -106,7 +127,6 @@ $(document).ready(function () {
 	};
 	
 	$(window).on('unload', function(e) {
-		// send route + disconnect
 		connection.send(route + ' disconnect');
 	});
 });

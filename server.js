@@ -14,8 +14,6 @@
 // the game, when they are ready, and when they have left games
 // -> Can also notify players of spectators joining the game
 // 6.
-// Add mobile support and controls
-// 7.
 // Add error 404 page not found
 
 var express = require('express');
