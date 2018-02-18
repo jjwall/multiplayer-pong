@@ -12,7 +12,7 @@ $(document).ready(function () {
 	}
 	else if (window.location.href.substring(8,9) === "p") {
 		connection = new WebSocket('wss://png-game.herokuapp.com/');
-		route = window.location.href.substring(28,33);
+		route = window.location.href.substring(31,36);
 	}
 	
 	var canvas = document.getElementById('pongTable');
@@ -29,9 +29,9 @@ $(document).ready(function () {
 	ctx.rect(740, 225, 10, 50);
 	ctx.stroke();
 	
-	connection.onopen = function () {
-		console.log(connection);
-	};
+	// connection.onopen = function () {
+		// console.log(connection);
+	// };
 	
 	$('#startButton').on('click', function() {
 		// send route + start
