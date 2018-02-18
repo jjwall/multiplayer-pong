@@ -52,3 +52,19 @@ h1 {
     padding: 10px;
 	text-align: center;
 }
+
+#joinDiv {
+	margin: auto;
+    width: 50%;
+    padding: 10px;
+	text-align: center;
+}
+
+#games, th, td {
+	color: white;
+	border: 1px solid white;
+}
+
+p {
+	color: white;
+}

@@ -7,8 +7,20 @@
 		<script src = "lib/jquery-3.3.1.min.js"></script>
 	</head>
 	<body>
+		<h3>Pong</h3>
 		<div id="buttonDiv">
-			<button id="joinGame">Join Game</button>
+			<button id="createGame">New Game</button>
+		</div>
+		<br>
+		<div id="joinDiv">
+			<p id="status"></p>
+			<table id="games" style="width:100%">
+			  <tr>
+				<th>Game ID</th>
+				<th>Players</th>
+				<th>Join / Spectate</th>
+			  </tr>
+			</table>
 		</div>
 		<script src="home.js"></script>
 	</body>

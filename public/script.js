@@ -83,27 +83,29 @@ $(document).ready(function () {
 			console.log(`you are player ${message.data}`);
 		}
 		else {
-			ctx.clearRect(0, 0, canvas.width, canvas.height);
-			ctx.beginPath();
-			var gameObjs = JSON.parse(message.data);
-			ctx.rect(gameObjs[route].puck.x, gameObjs[route].puck.y, gameObjs[route].puck.w, gameObjs[route].puck.h);
-			ctx.rect(gameObjs[route].leftpaddle.x, gameObjs[route].leftpaddle.y, gameObjs[route].leftpaddle.w, gameObjs[route].leftpaddle.h);
-			ctx.rect(gameObjs[route].rightpaddle.x, gameObjs[route].rightpaddle.y, gameObjs[route].rightpaddle.w, gameObjs[route].rightpaddle.h); 
-			ctx.stroke();
-			if (gameObjs[route].leftpaddle.score !== player1Score || gameObjs[route].rightpaddle.score !== player2Score) {
-				$('#player1Score').empty();
-				$('#player2Score').empty();
-				$('#player1Score').append(gameObjs[route].leftpaddle.score);
-				$('#player2Score').append(gameObjs[route].rightpaddle.score);
-				player1Score = gameObjs[route].leftpaddle.score;
-				player2Score = gameObjs[route].rightpaddle.score;
-			}
-			if (gameObjs[route].leftpaddle.score === 11) {
-				winnerElem.append("player 1 wins");
-			}
-			if (gameObjs[route].rightpaddle.score === 11) {
-				winnerElem.append("player 2 wins");
-			}
+			//if (gameObjs !== undefined) {
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				ctx.beginPath();
+				var gameObjs = JSON.parse(message.data);
+				ctx.rect(gameObjs[route].puck.x, gameObjs[route].puck.y, gameObjs[route].puck.w, gameObjs[route].puck.h);
+				ctx.rect(gameObjs[route].leftpaddle.x, gameObjs[route].leftpaddle.y, gameObjs[route].leftpaddle.w, gameObjs[route].leftpaddle.h);
+				ctx.rect(gameObjs[route].rightpaddle.x, gameObjs[route].rightpaddle.y, gameObjs[route].rightpaddle.w, gameObjs[route].rightpaddle.h); 
+				ctx.stroke();
+				if (gameObjs[route].leftpaddle.score !== player1Score || gameObjs[route].rightpaddle.score !== player2Score) {
+					$('#player1Score').empty();
+					$('#player2Score').empty();
+					$('#player1Score').append(gameObjs[route].leftpaddle.score);
+					$('#player2Score').append(gameObjs[route].rightpaddle.score);
+					player1Score = gameObjs[route].leftpaddle.score;
+					player2Score = gameObjs[route].rightpaddle.score;
+				}
+				if (gameObjs[route].leftpaddle.score === 11) {
+					winnerElem.append("player 1 wins");
+				}
+				if (gameObjs[route].rightpaddle.score === 11) {
+					winnerElem.append("player 2 wins");
+				}
+			//}
 		}
 	};
 	

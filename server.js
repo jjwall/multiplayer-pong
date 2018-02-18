@@ -1,17 +1,22 @@
 // TO DO:
 
 // 1. 
-// FIX RIGHT PADDLE CONTROLS
-// 2. 
-// Work on home page and match making system
+// Make Error 404 page
+// 2.
+// Swap out start button with "ready up" system so game doesn't
+// start until both players have clicked "ready"
 // 3.
-// Hide Start / Reset button Until 2 players have joined
+// Make angle sharper for paddle / puck bounce off collision
 // 4.
-// Create landing page
-// 5.
 // Enhance collision using AABB function
-// 6.
+// 5.
 // Add acceleration to paddle movement
+// 6.
+// Add message screen to games that notifies when players have joined
+// the game, when they are ready, and when they have left games
+// -> Can also notify players of spectators joining the game
+// 7.
+// Add mobile support and controls
 
 var express = require('express');
 var WebSocket = require('ws');
@@ -276,6 +281,10 @@ app.use(express.static('./public'));
 
 app.get("/", function(req, res) {
 	res.sendFile(path.join(__dirname, "/public/home.html"));
+});
+
+app.get("/games", function(req, res) {
+	res.send(concurrentGames);
 });
 
 app.get("/:route", function(req, res) {
