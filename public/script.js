@@ -4,22 +4,22 @@ $(document).ready(function () {
 	
 	var connection;
 	var route;
-	
-	alert(window.location.href);
 
 	if (window.location.href.substring(7,8) == "l") {
 		connection = new WebSocket('ws://localhost:8080');
 		route = window.location.href.substring(22,27);
-		console.log(route);
 	}
 	else if (window.location.href.substring(7,8) == "1") {
 		connection = new WebSocket('ws://192.168.7.43:8080/');
 		route = window.location.href.substring(25,30);
-		//alert(route);
 	}
 	else if (window.location.href.substring(8,9) == "p") {
 		connection = new WebSocket('wss://png-game.herokuapp.com/');
 		route = window.location.href.substring(31,36);
+	}
+	else if (window.location.href.substring(7,8) == "p") {
+		connection = new WebSocket('ws://png-game.herokuapp.com/');
+		route = window.location.href.substring(30,35);
 	}
 	
 	var joystick = 
