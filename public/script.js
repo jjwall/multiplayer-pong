@@ -2,18 +2,16 @@ $(document).ready(function () {
 	
 	window.WebSocket = window.WebSocket || window.MozWebSocket;
 	
-	var connection = new WebSocket('ws://localhost:8080');
-	//var connection = new WebSocket('wss://png-game.herokuapp.com/');
-	
+	var connection;
 	var route;
-	
-	console.log(window.location.href);
 
 	if (window.location.href.substring(7,8) === "l") {
+		connection = new WebSocket('ws://localhost:8080');
 		route = window.location.href.substring(22,27);
 		console.log(route);
 	}
 	else if (window.location.href.substring(8,9) === "p") {
+		connection = new WebSocket('wss://png-game.herokuapp.com/');
 		route = window.location.href.substring(28,33);
 	}
 	
