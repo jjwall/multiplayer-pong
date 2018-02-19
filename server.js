@@ -335,7 +335,7 @@ wss.on('connection', function(connection) {
 				// concurrentGames[route].rightpaddle.y = 225;
 				concurrentGames[route].leftpaddle.score = 0;
 				concurrentGames[route].rightpaddle.score = 0;
-				concurrentGames[route].puck.velx = 9;
+				concurrentGames[route].puck.velx = 5;
 				concurrentGames[route].puck.vely = 0;
 			}
 		}
