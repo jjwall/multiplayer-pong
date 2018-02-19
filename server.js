@@ -199,6 +199,12 @@ wss.on('connection', function(connection) {
 	// if a goal is scored this function is trigged
 	function resetPuck(route) {
 		// a player scored 11, end game and send resting values
+		if (concurrentGames[route].leftpaddle.score === 11) {
+			sendMessage("Player 1 wins!", route);
+		}
+		if (concurrentGames[route].rightpaddle.score === 11) {
+			sendMessage("Player 2 wins!", route);
+		}
 		if (concurrentGames[route].leftpaddle.score === 11 || concurrentGames[route].rightpaddle.score === 11) {
 			concurrentGames[route].puck.x = 375;
 			concurrentGames[route].puck.y = 240;
@@ -230,14 +236,14 @@ wss.on('connection', function(connection) {
 		}
 	}
 	
-	connection.on('message', function(message) {
-		var route = message.substring(0, 5);
-		
-		function sendMessage(msg) {
+	function sendMessage(msg, route) {
 			wss.clients.forEach(client => {
 				client.send(`${route} message ${msg}`);
 			});
 		}
+	
+	connection.on('message', function(message) {
+		var route = message.substring(0, 5);
 		
 		if (message.substring(6, 10) == 'join') {
 			if (concurrentGames[route] == undefined) {
@@ -249,18 +255,18 @@ wss.on('connection', function(connection) {
 			connection.send(concurrentGames[route].players);
 			
 			if (concurrentGames[route].players === 1) {
-				sendMessage("Player 1 (left paddle) has joined the game!");
+				sendMessage("Player 1 (left paddle) has joined the game!", route);
 			}
 			else if (concurrentGames[route].players === 2) {
-				sendMessage("Player 2 (right paddle) has joined the game!");
+				sendMessage("Player 2 (right paddle) has joined the game!", route);
 			}
 			else {
-				sendMessage("A spectator has joined the game!");
+				sendMessage("A spectator has joined the game!", route);
 			}
 		}
 		
 		if (message.substring(6, 16) == 'disconnect') {
-			sendMessage("A player has left the game!");
+			sendMessage("A player has left the game!", route);
 			connection.terminate();
 			if (concurrentGames[route]) {
 				if (concurrentGames[route].players > 0) {
@@ -307,16 +313,16 @@ wss.on('connection', function(connection) {
 		if (message.substring(6, 11) == 'ready') {
 			if (message.substring(0, 5) == route && message.substring(12,13) == 1) {
 				concurrentGames[route].leftpaddle.ready = true;
-				sendMessage("Player 1 is ready!");
+				sendMessage("Player 1 is ready!", route);
 			}
 			if (message.substring(0, 5) == route && message.substring(12,13) == 2) {
 				concurrentGames[route].rightpaddle.ready = true;
-				sendMessage("Player 2 is ready!");
+				sendMessage("Player 2 is ready!", route);
 			}
 			if (!concurrentGames[route].gamestate && concurrentGames[route].leftpaddle.ready && concurrentGames[route].rightpaddle.ready) {
 				concurrentGames[route].gamestate = true;
 				setTimeout(function() {
-					sendMessage("Game will start soon!");
+					sendMessage("Game will start soon!", route);
 				}, 3500);
 				setTimeout(function() {
 					beginGame();
@@ -335,7 +341,7 @@ wss.on('connection', function(connection) {
 				// concurrentGames[route].rightpaddle.y = 225;
 				concurrentGames[route].leftpaddle.score = 0;
 				concurrentGames[route].rightpaddle.score = 0;
-				concurrentGames[route].puck.velx = 4; // -> normally 9
+				concurrentGames[route].puck.velx = 5; // -> normally 9
 				concurrentGames[route].puck.vely = 0;
 			}
 		}
