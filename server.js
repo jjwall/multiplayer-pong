@@ -3,10 +3,8 @@
 // 1. 
 // Enhance collision using AABB function
 // 2.
-// Add Acceleration for right paddle
-// 3.
 // Refactor gameFrames logic so leftpaddle/rightpaddle logic isn't hard coded
-// 4.
+// 3.
 // Randomize puck starting velocities
 
 var express = require('express');
@@ -95,7 +93,7 @@ wss.on('connection', function(connection) {
 			Object.keys(concurrentGames).forEach(gameObjs => {
 				// gameObjs are the "keys" for the concurrentGames object, i.e. the routes
 				
-				// controls for left paddle
+				// acceleration calculations for left paddle
 				if (concurrentGames[gameObjs].leftpaddle.up && concurrentGames[gameObjs].leftpaddle.y >= 0) {
 					concurrentGames[gameObjs].leftpaddle.deaccelerator = "-";
 					concurrentGames[gameObjs].leftpaddle.y -= ((concurrentGames[gameObjs].leftpaddle.vely)^2)/2;
@@ -124,15 +122,35 @@ wss.on('connection', function(connection) {
 					}
 				}
 				
-				// TODO: Add acceleration for right paddle
+				// acceleration calculations for right paddle
+				if (concurrentGames[gameObjs].rightpaddle.up && concurrentGames[gameObjs].rightpaddle.y >= 0) {
+					concurrentGames[gameObjs].rightpaddle.deaccelerator = "-";
+					concurrentGames[gameObjs].rightpaddle.y -= ((concurrentGames[gameObjs].rightpaddle.vely)^2)/2;
+					if (concurrentGames[gameObjs].rightpaddle.vely < 13) {
+						concurrentGames[gameObjs].rightpaddle.vely+=2;
+					}
+				}
+				else if (concurrentGames[gameObjs].rightpaddle.down && concurrentGames[gameObjs].rightpaddle.y <= 450) {
+					concurrentGames[gameObjs].rightpaddle.deaccelerator = "+";
+					concurrentGames[gameObjs].rightpaddle.y += ((concurrentGames[gameObjs].rightpaddle.vely)^2)/2;
+					if (concurrentGames[gameObjs].rightpaddle.vely < 13) {
+						concurrentGames[gameObjs].rightpaddle.vely+=2;
+					}
+				}
+				else {
+					if (concurrentGames[gameObjs].rightpaddle.y >= 0 && concurrentGames[gameObjs].rightpaddle.y <= 450) {
+						if (concurrentGames[gameObjs].rightpaddle.vely > 0) {
+							concurrentGames[gameObjs].rightpaddle.vely-=2;
+							if (concurrentGames[gameObjs].rightpaddle.deaccelerator === "+") {
+								concurrentGames[gameObjs].rightpaddle.y += ((concurrentGames[gameObjs].rightpaddle.vely)^2)/2;
+							}
+							if (concurrentGames[gameObjs].rightpaddle.deaccelerator === "-") {
+								concurrentGames[gameObjs].rightpaddle.y -= ((concurrentGames[gameObjs].rightpaddle.vely)^2)/2;
+							}
+						}
+					}
+				}
 				
-				// controls for right paddle
-				if ( concurrentGames[gameObjs].rightpaddle.up && concurrentGames[gameObjs].rightpaddle.y >= 0) {
-					concurrentGames[gameObjs].rightpaddle.y -= concurrentGames[gameObjs].rightpaddle.vely;
-				}
-				if (concurrentGames[gameObjs].rightpaddle.down && concurrentGames[gameObjs].rightpaddle.y <= 450) {
-					concurrentGames[gameObjs].rightpaddle.y += concurrentGames[gameObjs].rightpaddle.vely;
-				}
 				// player 1 scores
 				if (concurrentGames[gameObjs].puck.x >= 740) {
 					concurrentGames[gameObjs].leftpaddle.score++;
