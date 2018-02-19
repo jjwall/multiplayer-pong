@@ -4,10 +4,16 @@
 		<meta charset = "utf-8">
 		<title>Pong</title>
 		<link rel="stylesheet" href="style.css">
-		<script src = "lib/jquery-3.3.1.min.js"></script>
+		<link rel="stylesheet" href="lib/jquery-ui-1.12.1.custom/jquery-ui.css">
+		<script src="lib/jquery-3.3.1.min.js"></script>
 		<script src="lib/nipplejs.min.js"></script>
+		<script src="lib/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
 	</head>
 	<body>
+		<div id="messageModal" class="messageModal" title="Game Message">
+			<div id="msgBody" class="ui-widget-header"></div>
+			<!-- ui-corner-all"></div> -->
+		</div>
 		<div id="joystickWrapper">
 			<h1 id="player1Score">0</h1>
 			<h1 id="player2Score">0</h1>
@@ -16,7 +22,8 @@
 			</canvas>
 		</div>
 		<div id="buttonDiv">
-			<button id="startButton">Start / Reset</button>
+			<button id="resetButton">Reset</button>
+			<button id="readyButton">Ready</button>
 			<button id="joinButton">Join</button>
 		</div>
 		<script src="script.js"></script>

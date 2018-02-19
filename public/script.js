@@ -4,6 +4,10 @@ $(document).ready(function () {
 	
 	var connection;
 	var route;
+	var msgBody = $('#msgBody');
+	var msgModal = $('#messageModal');
+	var resetButton = $('#resetButton');
+	resetButton.hide();
 
 	if (window.location.href.substring(7,8) == "l") {
 		connection = new WebSocket('ws://localhost:8080');
@@ -42,9 +46,9 @@ $(document).ready(function () {
 	ctx.rect(740, 225, 10, 50);
 	ctx.stroke();
 	
-	$('#startButton').on('click', function() {
-		connection.send(route + ' start');
-	});
+	// $('#readyButton').on('click', function() {
+		// connection.send(route + ' start');
+	// });
 	
 	$('#joinButton').on('click', function() {
 		connection.send(route + ' join');
@@ -106,7 +110,21 @@ $(document).ready(function () {
 		if (message.data.length === 1) {
 			// if message data length is 1 then we are receiving player join info
 			currentPlayer = message.data;
-			console.log(`you are player ${message.data}`);
+			var playerMessage;
+			// if (currentPlayer == 1) {
+				// writeMsg("You have joined as Player 1 (left paddle)!");
+			// }
+			// else if (currentPlayer == 2) {
+				// writeMsg("You have joined as Player 2 (right paddle)!");
+			// }
+			// else {
+				// writeMsg("You have joined as a spectator!");
+			// }
+		}
+		else if (message.data.substring(0, 5) === route) {
+			if (message.data.substring(6, 13) === "message") {
+				writeMsg(message.data.substring(14, message.data.length));
+			}
 		}
 		else {
 			ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -132,6 +150,24 @@ $(document).ready(function () {
 			}
 		}
 	};
+	
+	msgModal.dialog({
+		autoOpen: false,
+		show: { effect: "slide", duration: 400 },
+		hide: { effect: "slide", duration: 400 },
+		draggable: false,
+		height: 100
+	});
+	
+	function writeMsg(message) {
+		msgBody.empty();
+		msgBody.append(message);
+		msgModal.dialog('open');
+		setTimeout(function(){
+			msgModal.dialog('close');
+		}, 3000);
+	}
+	//msgModal.dialog('close');
 	
 	$(window).on('unload', function(e) {
 		connection.send(route + ' disconnect');

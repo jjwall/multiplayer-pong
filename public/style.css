@@ -70,6 +70,16 @@ h1 {
 	position: relative;
 }
 
+.messageModal {
+	position: fixed;
+	text-align: center;
+	width: 300px;
+}
+
+.ui-dialog-titlebar-close {
+    visibility: hidden;
+}
+
 p, a {
 	color: white;
 }

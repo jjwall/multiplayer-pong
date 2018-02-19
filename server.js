@@ -13,6 +13,8 @@
 // Add Acceleration for right paddle
 // 6.
 // Refactor gameFrames logic so leftpaddle/rightpaddle logic isn't hard coded
+// 7.
+// Use jQuery UI from message ribbon system
 
 var express = require('express');
 var WebSocket = require('ws');
@@ -214,6 +216,12 @@ wss.on('connection', function(connection) {
 	connection.on('message', function(message) {
 		var route = message.substring(0, 5);
 		
+		function sendMessage(msg) {
+			wss.clients.forEach(client => {
+				client.send(`${route} message ${msg}`);
+			});
+		}
+		
 		if (message.substring(6, 10) == 'join') {
 			if (concurrentGames[route] == undefined) {
 				concurrentGames[route] = new gameObjs();
@@ -222,6 +230,16 @@ wss.on('connection', function(connection) {
 			
 			// should send only to client who clicked "join"
 			connection.send(concurrentGames[route].players);
+			
+			if (concurrentGames[route].players === 1) {
+				sendMessage("Player 1 (left paddle) has joined the game!");
+			}
+			else if (concurrentGames[route].players === 1) {
+				sendMessage("Player 2 (right paddle) has joined the game!");
+			}
+			else {
+				sendMessage("A spectator has joined the game!");
+			}
 		}
 		
 		if (message.substring(6, 16) == 'disconnect') {
