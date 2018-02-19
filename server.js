@@ -66,12 +66,12 @@ function puckYVal(paddlepos, puckpos) {
 	// i.e. top half of the paddle
 	if (puckpos < halfPaddle) {
 		var ratio = (halfPaddle - puckpos) / 100;
-		return -30 * ratio;
+		return -22 * ratio; // -> normally 30
 	}
 	// i.e. bottom half of the paddle
 	else if (puckpos > halfPaddle) {
 		var ratio = (puckpos - halfPaddle) / 100;
-		return 30 * ratio;
+		return 22 * ratio; // -> normally 30
 		}
 	else 
 		return 0;
@@ -335,7 +335,7 @@ wss.on('connection', function(connection) {
 				// concurrentGames[route].rightpaddle.y = 225;
 				concurrentGames[route].leftpaddle.score = 0;
 				concurrentGames[route].rightpaddle.score = 0;
-				concurrentGames[route].puck.velx = 5;
+				concurrentGames[route].puck.velx = 4; // -> normally 9
 				concurrentGames[route].puck.vely = 0;
 			}
 		}
