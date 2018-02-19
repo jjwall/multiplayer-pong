@@ -6,8 +6,8 @@ $(document).ready(function () {
 	var route;
 	var msgBody = $('#msgBody');
 	var msgModal = $('#messageModal');
-	var resetButton = $('#resetButton');
-	resetButton.hide();
+	var readyButton = $('#readyButton');
+	readyButton.hide();
 
 	if (window.location.href.substring(7,8) == "l") {
 		connection = new WebSocket('ws://localhost:8080');
@@ -46,13 +46,15 @@ $(document).ready(function () {
 	ctx.rect(740, 225, 10, 50);
 	ctx.stroke();
 	
-	// $('#readyButton').on('click', function() {
-		// connection.send(route + ' start');
-	// });
+	readyButton.on('click', function() {
+		connection.send(route + ' ready ' + currentPlayer);
+		readyButton.hide();
+	});
 	
 	$('#joinButton').on('click', function() {
 		connection.send(route + ' join');
 		$('#joinButton').hide();
+		readyButton.show();
 	});
 	
 	// keyboard controls
@@ -110,16 +112,6 @@ $(document).ready(function () {
 		if (message.data.length === 1) {
 			// if message data length is 1 then we are receiving player join info
 			currentPlayer = message.data;
-			var playerMessage;
-			// if (currentPlayer == 1) {
-				// writeMsg("You have joined as Player 1 (left paddle)!");
-			// }
-			// else if (currentPlayer == 2) {
-				// writeMsg("You have joined as Player 2 (right paddle)!");
-			// }
-			// else {
-				// writeMsg("You have joined as a spectator!");
-			// }
 		}
 		else if (message.data.substring(0, 5) === route) {
 			if (message.data.substring(6, 13) === "message") {
@@ -144,9 +136,13 @@ $(document).ready(function () {
 			}
 			if (gameObjs[route].leftpaddle.score === 11) {
 				winnerElem.append("player 1 wins");
+				readyButton.show();
+				return;
 			}
 			if (gameObjs[route].rightpaddle.score === 11) {
 				winnerElem.append("player 2 wins");
+				readyButton.show();
+				return;
 			}
 		}
 	};
@@ -167,7 +163,6 @@ $(document).ready(function () {
 			msgModal.dialog('close');
 		}, 3000);
 	}
-	//msgModal.dialog('close');
 	
 	$(window).on('unload', function(e) {
 		connection.send(route + ' disconnect');
