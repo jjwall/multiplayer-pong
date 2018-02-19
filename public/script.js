@@ -29,7 +29,8 @@ $(document).ready(function () {
 	var joystick = 
 		nipplejs.create({
 			zone: document.getElementById('joystickWrapper'),
-			color: 'white'
+			color: 'white',
+			mode: 'semi'
 		});
 	
 	var canvas = document.getElementById('pongTable');
