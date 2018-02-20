@@ -31,7 +31,6 @@ $(document).ready(function () {
 	
 	var canvas = document.getElementById('pongTable');
 	var ctx = canvas.getContext('2d');
-	//var winnerElem = $('#winner');
 	var currentPlayer;
 	var keyUp = false;
 	var keyDown = false;
@@ -93,7 +92,6 @@ $(document).ready(function () {
 	});
 
 	connection.onmessage = function (message) {
-		//winnerElem.empty();
 		if (keyUp) {
 			connection.send(route + ' ' + currentPlayer + ' up');
 		}
@@ -133,11 +131,9 @@ $(document).ready(function () {
 					player2Score = gameObjs[route].rightpaddle.score;
 				}
 				if (gameObjs[route].leftpaddle.score === 11) {
-					//winnerElem.append("player 1 wins");
 					readyButton.show();
 				}
 				if (gameObjs[route].rightpaddle.score === 11) {
-					//winnerElem.append("player 2 wins");
 					readyButton.show();
 				}
 			}
@@ -160,6 +156,8 @@ $(document).ready(function () {
 			msgModal.dialog('close');
 		}, 3000);
 	}
+	
+	writeMsg("Welcome to Game <em>" + route + "</em> !");
 	
 	$(window).on('unload', function(e) {
 		connection.send(route + ' disconnect');

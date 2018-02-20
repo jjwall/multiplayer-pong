@@ -319,14 +319,16 @@ wss.on('connection', function(connection) {
 				concurrentGames[route].rightpaddle.ready = true;
 				sendMessage("Player 2 is ready!", route);
 			}
-			if (!concurrentGames[route].gamestate && concurrentGames[route].leftpaddle.ready && concurrentGames[route].rightpaddle.ready) {
-				concurrentGames[route].gamestate = true;
-				setTimeout(function() {
-					sendMessage("Game will start soon!", route);
-				}, 3500);
-				setTimeout(function() {
-					beginGame();
-				}, 7500);
+			if (concurrentGames[route] != undefined) {
+				if (!concurrentGames[route].gamestate && concurrentGames[route].leftpaddle.ready && concurrentGames[route].rightpaddle.ready) {
+					concurrentGames[route].gamestate = true;
+					setTimeout(function() {
+						sendMessage("Game will start soon!", route);
+					}, 3500);
+					setTimeout(function() {
+						beginGame();
+					}, 7500);
+				}
 			}
 		}
 		
