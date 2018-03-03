@@ -6,9 +6,6 @@
 // Refactor gameFrames logic so leftpaddle/rightpaddle logic isn't hard coded
 // 3.
 // Randomize puck starting velocities
-// 4.
-// Add a ball speed "voting" mechanism where a player can vote for the speed before a game and the resulting speed will
-// be the average of the two votes. Thinking range would be capped at 4 to 9
 
 var express = require('express');
 var WebSocket = require('ws');
@@ -45,6 +42,7 @@ function gameObjs(puck, leftpaddle, rightpaddle, players = 0, gamestate = false)
 			deaccelerator: null,
 			ready: false,
 			connected: false,
+			ballSpeedVote: 6,
 			score: 0
 		};
 	this.rightpaddle = 
@@ -59,6 +57,7 @@ function gameObjs(puck, leftpaddle, rightpaddle, players = 0, gamestate = false)
 		deaccelerator: null,
 		ready: false,
 		connected: false,
+		ballSpeedVote: 6,
 		score: 0
 	};
 	this.players = players;
@@ -345,12 +344,14 @@ wss.on('connection', function(connection) {
 		
 		if (message.substring(6, 11) == 'ready') {
 			if (message.substring(0, 5) == route && message.substring(12,13) == 1) {
+				concurrentGames[route].leftpaddle.ballSpeedVote = message.substring(14,15);
 				concurrentGames[route].leftpaddle.ready = true;
-				sendMessage("Player 1 is ready!", route);
+				sendMessage("Player 1 is ready with a ball speed vote of " + concurrentGames[route].leftpaddle.ballSpeedVote + "!", route);
 			}
 			if (message.substring(0, 5) == route && message.substring(12,13) == 2) {
+				concurrentGames[route].rightpaddle.ballSpeedVote = message.substring(14,15);
 				concurrentGames[route].rightpaddle.ready = true;
-				sendMessage("Player 2 is ready!", route);
+				sendMessage("Player 2 is ready with a ball speed vote of " + concurrentGames[route].rightpaddle.ballSpeedVote + "!", route);
 			}
 			if (concurrentGames[route] != undefined) {
 				if (!concurrentGames[route].gamestate && concurrentGames[route].leftpaddle.ready && concurrentGames[route].rightpaddle.ready) {
@@ -370,13 +371,9 @@ wss.on('connection', function(connection) {
 				// starting values
 				concurrentGames[route].puck.x = 375;
 				concurrentGames[route].puck.y = 240;
-				// concurrentGames[route].leftpaddle.deaccelerator = null;
-				// concurrentGames[route].rightpaddle.deaccelerator = null;
-				// concurrentGames[route].leftpaddle.y = 225;
-				// concurrentGames[route].rightpaddle.y = 225;
 				concurrentGames[route].leftpaddle.score = 0;
 				concurrentGames[route].rightpaddle.score = 0;
-				concurrentGames[route].puck.velx = 5; // -> normally 9
+				concurrentGames[route].puck.velx = (parseInt(concurrentGames[route].leftpaddle.ballSpeedVote) + parseInt(concurrentGames[route].rightpaddle.ballSpeedVote)) / 2; // -> normally 9
 				concurrentGames[route].puck.vely = 0;
 			}
 		}

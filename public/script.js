@@ -4,9 +4,12 @@ $(document).ready(function () {
 	
 	var connection;
 	var route;
+	var ballSpeed = $('#ballSpeed');
 	var msgBody = $('#msgBody');
 	var msgModal = $('#messageModal');
 	var readyButton = $('#readyButton');
+	$('label').hide();
+	ballSpeed.hide();
 	readyButton.hide();
 
 	if (window.location.href.substring(7,8) == "l") {
@@ -43,14 +46,19 @@ $(document).ready(function () {
 	ctx.stroke();
 	
 	readyButton.on('click', function() {
-		connection.send(route + ' ready ' + currentPlayer);
+		var ballSpeedVote = ballSpeed.val();
+		connection.send(route + ' ready ' + currentPlayer + ' ' + ballSpeedVote);
 		readyButton.hide();
+		ballSpeed.hide();
+		$('label').hide();
 	});
 	
 	$('#joinButton').on('click', function() {
 		connection.send(route + ' join');
 		$('#joinButton').hide();
 		readyButton.show();
+		ballSpeed.show();
+		$('label').show();
 	});
 	
 	// keyboard controls
