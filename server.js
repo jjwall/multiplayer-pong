@@ -4,8 +4,6 @@
 // Enhance collision using AABB function
 // 2.
 // Refactor gameFrames logic so leftpaddle/rightpaddle logic isn't hard coded
-// 3.
-// Randomize puck starting velocities
 
 var express = require('express');
 var WebSocket = require('ws');
@@ -226,18 +224,26 @@ wss.on('connection', function(connection) {
 		if (concurrentGames[route].leftpaddle.score < 11 && concurrentGames[route].rightpaddle.score < 11) {
 			concurrentGames[route].puck.x = 375;
 			concurrentGames[route].puck.y = 240;
-			var storeVelY = concurrentGames[route].puck.vely;
+			//var storeVelY = concurrentGames[route].puck.vely;
 			var storeVelX = concurrentGames[route].puck.velx;
 			concurrentGames[route].puck.vely = 0;
 			concurrentGames[route].puck.velx = 0;
 			setTimeout(function(){
 				// if undefined then don't execute this block of code or server will die.
 				if (concurrentGames[route] != undefined) { 
-					concurrentGames[route].puck.vely = storeVelY;
-					concurrentGames[route].puck.velx = storeVelX * (-1);
+					concurrentGames[route].puck.vely = randomPuckYVel() * randomDirection();
+					concurrentGames[route].puck.velx = storeVelX * randomDirection();
 				}
 			}, 3000);
 		}
+	}
+
+	function randomPuckYVel() {
+		return (Math.random() * 5.5);
+	}
+
+	function randomDirection() {
+		return (Math.floor(Math.random() * 2) == 0) ? 1 : -1;
 	}
 	
 	function sendMessage(msg, route) {
@@ -373,8 +379,8 @@ wss.on('connection', function(connection) {
 				concurrentGames[route].puck.y = 240;
 				concurrentGames[route].leftpaddle.score = 0;
 				concurrentGames[route].rightpaddle.score = 0;
-				concurrentGames[route].puck.velx = (parseInt(concurrentGames[route].leftpaddle.ballSpeedVote) + parseInt(concurrentGames[route].rightpaddle.ballSpeedVote)) / 2; // -> normally 9
-				concurrentGames[route].puck.vely = 0;
+				concurrentGames[route].puck.velx = ((parseInt(concurrentGames[route].leftpaddle.ballSpeedVote) + parseInt(concurrentGames[route].rightpaddle.ballSpeedVote)) / 2) * randomDirection();
+				concurrentGames[route].puck.vely = randomPuckYVel() * randomPuckYVel();
 			}
 		}
 	});
