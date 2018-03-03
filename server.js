@@ -6,6 +6,9 @@
 // Refactor gameFrames logic so leftpaddle/rightpaddle logic isn't hard coded
 // 3.
 // Randomize puck starting velocities
+// 4.
+// Add a ball speed "voting" mechanism where a player can vote for the speed before a game and the resulting speed will
+// be the average of the two votes. Thinking range would be capped at 4 to 9
 
 var express = require('express');
 var WebSocket = require('ws');
@@ -41,6 +44,7 @@ function gameObjs(puck, leftpaddle, rightpaddle, players = 0, gamestate = false)
 			down: false,
 			deaccelerator: null,
 			ready: false,
+			connected: false,
 			score: 0
 		};
 	this.rightpaddle = 
@@ -54,6 +58,7 @@ function gameObjs(puck, leftpaddle, rightpaddle, players = 0, gamestate = false)
 		down: false,
 		deaccelerator: null,
 		ready: false,
+		connected: false,
 		score: 0
 	};
 	this.players = players;
@@ -251,29 +256,57 @@ wss.on('connection', function(connection) {
 			}
 			concurrentGames[route].players++;
 			
-			// should send only to client who clicked "join"
-			connection.send(concurrentGames[route].players);
-			
-			if (concurrentGames[route].players === 1) {
+			// determines which player is connected, and connects player to leftpaddle controls, rightpaddle controls or makes the third joiner a spectator
+			if (!concurrentGames[route].leftpaddle.connected && !concurrentGames[route].rightpaddle.connected) {
+				concurrentGames[route].leftpaddle.connected = true;
+				connection.send("1");
 				sendMessage("Player 1 (left paddle) has joined the game!", route);
 			}
-			else if (concurrentGames[route].players === 2) {
+			else if (concurrentGames[route].leftpaddle.connected && !concurrentGames[route].rightpaddle.connected) {
+				concurrentGames[route].rightpaddle.connected = true;
+				connection.send("2");
 				sendMessage("Player 2 (right paddle) has joined the game!", route);
 			}
+			else if (!concurrentGames[route].leftpaddle.connected && concurrentGames[route].rightpaddle.connected) {
+				concurrentGames[route].leftpaddle.connected = true;
+				connection.send("1");
+				sendMessage("Player 1 (left paddle) has joined the game!", route);
+			}
 			else {
+				connection.send("3");
 				sendMessage("A spectator has joined the game!", route);
 			}
 		}
-		
+
+		if (message.substring(6, 18) == '1 disconnect') {
+			sendMessage("Player 1 has left the game!", route);
+			connection.terminate();
+			concurrentGames[route].leftpaddle.connected = false;
+			concurrentGames[route].players--;
+			if (concurrentGames[route]) {
+				if (!concurrentGames[route].rightpaddle.connected) {
+					delete concurrentGames[route];
+				}
+			}
+		}
+
+		if (message.substring(6, 18) == '2 disconnect') {
+			sendMessage("Player 2 has left the game!", route);
+			connection.terminate();
+			concurrentGames[route].rightpaddle.connected = false;
+			concurrentGames[route].players--;
+			if (concurrentGames[route]) {
+				if (!concurrentGames[route].leftpaddle.connected) {
+					delete concurrentGames[route];
+				}
+			}
+		}
+
 		if (message.substring(6, 16) == 'disconnect') {
-			sendMessage("A player has left the game!", route);
 			connection.terminate();
 			if (concurrentGames[route]) {
-				if (concurrentGames[route].players > 0) {
-					concurrentGames[route].players--;
-					if (concurrentGames[route].players === 0) {
-						delete concurrentGames[route];
-					}
+				if (!concurrentGames[route].leftpaddle.connected && !concurrentGames[route].rightpaddle.connected) {
+					delete concurrentGames[route];
 				}
 			}
 		}

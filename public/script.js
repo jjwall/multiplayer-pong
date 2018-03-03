@@ -160,6 +160,11 @@ $(document).ready(function () {
 	writeMsg("Welcome to Game <em>" + route + "</em> !");
 	
 	$(window).on('unload', function(e) {
-		connection.send(route + ' disconnect');
+		if (currentPlayer < 3) {
+			connection.send(route + ' ' + currentPlayer + ' disconnect');
+		}
+		else if (currentPlayer == 3 || currentPlayer == undefined) {
+			connection.send(route + ' disconnect');
+		}
 	});
 });
